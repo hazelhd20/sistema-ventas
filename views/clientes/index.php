@@ -73,46 +73,52 @@ $pageTitle = "Clientes";
 
 <!-- Modal -->
 <div id="modalCliente" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="relative top-20 mx-auto p-6 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4" id="modalTitle">Nuevo Cliente</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-6" id="modalTitle">Nuevo Cliente</h3>
             <form id="formCliente" method="POST" action="">
                 <input type="hidden" name="idCliente" id="idCliente">
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Nombre *</label>
-                    <input type="text" name="nombre" id="nombre" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+                        <input type="text" name="nombre" id="nombre" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Apellidos</label>
+                        <input type="text" name="apellidos" id="apellidos" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Apellidos</label>
-                    <input type="text" name="apellidos" id="apellidos" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" id="email" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input type="text" name="telefono" id="telefono" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Dirección</label>
-                    <textarea name="direccion" id="direccion" rows="2" 
-                              class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">RFC</label>
-                    <input type="text" name="rfc" id="rfc" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Dirección</label>
+                        <textarea name="direccion" id="direccion" rows="2" 
+                                  class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">RFC</label>
+                        <input type="text" name="rfc" id="rfc" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3">

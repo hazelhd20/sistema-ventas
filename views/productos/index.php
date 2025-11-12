@@ -79,16 +79,24 @@ $pageTitle = "Productos";
 
 <!-- Modal -->
 <div id="modalProducto" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="relative top-20 mx-auto p-6 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4" id="modalTitle">Nuevo Producto</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-6" id="modalTitle">Nuevo Producto</h3>
             <form id="formProducto" method="POST" action="">
                 <input type="hidden" name="codProducto" id="codProducto">
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Nombre *</label>
-                    <input type="text" name="nombre" id="nombre" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+                        <input type="text" name="nombre" id="nombre" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Código de Barras</label>
+                        <input type="text" name="codigoBarras" id="codigoBarras" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
                 <div class="mb-4">
@@ -97,50 +105,48 @@ $pageTitle = "Productos";
                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Categoría *</label>
-                    <select name="idCategoria" id="idCategoria" required 
-                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                        <option value="">Seleccione...</option>
-                        <?php foreach ($categorias as $cat): ?>
-                            <option value="<?php echo $cat['idCategoria']; ?>"><?php echo htmlspecialchars($cat['nombre']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Categoría *</label>
+                        <select name="idCategoria" id="idCategoria" required 
+                                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">Seleccione...</option>
+                            <?php foreach ($categorias as $cat): ?>
+                                <option value="<?php echo $cat['idCategoria']; ?>"><?php echo htmlspecialchars($cat['nombre']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Medida *</label>
+                        <select name="idMedida" id="idMedida" required 
+                                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">Seleccione...</option>
+                            <?php foreach ($medidas as $med): ?>
+                                <option value="<?php echo $med['idMedida']; ?>"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Medida *</label>
-                    <select name="idMedida" id="idMedida" required 
-                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                        <option value="">Seleccione...</option>
-                        <?php foreach ($medidas as $med): ?>
-                            <option value="<?php echo $med['idMedida']; ?>"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Precio *</label>
-                    <input type="number" name="precio" id="precio" step="0.01" min="0" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Existencia</label>
-                    <input type="number" name="existencia" id="existencia" min="0" value="0" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Stock Mínimo</label>
-                    <input type="number" name="stockMinimo" id="stockMinimo" min="0" value="10" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Código de Barras</label>
-                    <input type="text" name="codigoBarras" id="codigoBarras" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Precio *</label>
+                        <input type="number" name="precio" id="precio" step="0.01" min="0" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Existencia</label>
+                        <input type="number" name="existencia" id="existencia" min="0" value="0" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock Mínimo</label>
+                        <input type="number" name="stockMinimo" id="stockMinimo" min="0" value="10" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3">

@@ -68,67 +68,75 @@ $pageTitle = "Usuarios";
 
 <!-- Modal -->
 <div id="modalUsuario" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div class="relative top-20 mx-auto p-6 border w-11/12 max-w-5xl shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg font-medium text-gray-900 mb-4" id="modalTitle">Nuevo Usuario</h3>
+            <h3 class="text-lg font-medium text-gray-900 mb-6" id="modalTitle">Nuevo Usuario</h3>
             <form id="formUsuario" method="POST" action="">
                 <input type="hidden" name="idUsuario" id="idUsuario">
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Rol *</label>
-                    <select name="idRol" id="idRol" required 
-                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                        <option value="">Seleccione...</option>
-                        <?php foreach ($roles as $rol): ?>
-                            <option value="<?php echo $rol['idRol']; ?>"><?php echo htmlspecialchars($rol['nombre']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Rol *</label>
+                        <select name="idRol" id="idRol" required 
+                                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">Seleccione...</option>
+                            <?php foreach ($roles as $rol): ?>
+                                <option value="<?php echo $rol['idRol']; ?>"><?php echo htmlspecialchars($rol['nombre']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Usuario *</label>
+                        <input type="text" name="usuario" id="usuario" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Nombre *</label>
-                    <input type="text" name="nombre" id="nombre" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre *</label>
+                        <input type="text" name="nombre" id="nombre" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Apellidos *</label>
+                        <input type="text" name="apellidos" id="apellidos" required 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Apellidos *</label>
-                    <input type="text" name="apellidos" id="apellidos" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contraseña <span id="passwordRequired">*</span></label>
+                        <input type="password" name="password" id="password" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                        <p class="text-xs text-gray-500 mt-1" id="passwordHint">Dejar en blanco para mantener la actual</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" name="email" id="email" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
                 </div>
                 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Usuario *</label>
-                    <input type="text" name="usuario" id="usuario" required 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Contraseña <span id="passwordRequired">*</span></label>
-                    <input type="password" name="password" id="password" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                    <p class="text-xs text-gray-500 mt-1" id="passwordHint">Dejar en blanco para mantener la actual</p>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" name="email" id="email" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Teléfono</label>
-                    <input type="text" name="telefono" id="telefono" 
-                           class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                </div>
-                
-                <div class="mb-4" id="estadoDiv">
-                    <label class="block text-sm font-medium text-gray-700">Estado</label>
-                    <select name="estado" id="estado" 
-                            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
-                        <option value="1">Activo</option>
-                        <option value="0">Inactivo</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Teléfono</label>
+                        <input type="text" name="telefono" id="telefono" 
+                               class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                    </div>
+                    
+                    <div id="estadoDiv">
+                        <label class="block text-sm font-medium text-gray-700">Estado</label>
+                        <select name="estado" id="estado" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3">
