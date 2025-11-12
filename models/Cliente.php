@@ -23,7 +23,9 @@ class Cliente {
         $query = "SELECT * FROM " . $this->table . " WHERE estado = 1";
         
         if (!empty($search)) {
-            $query .= " AND (nombre LIKE :search OR apellidos LIKE :search OR telefono LIKE :search)";
+            $query .= " AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(apellidos, ''), ' ', 
+                        COALESCE(telefono, ''), ' ', COALESCE(email, ''), ' ', 
+                        COALESCE(rfc, ''), ' ', COALESCE(direccion, '')) LIKE :search)";
         }
         
         $query .= " ORDER BY nombre, apellidos";
@@ -32,7 +34,7 @@ class Cliente {
         
         if (!empty($search)) {
             $searchParam = "%$search%";
-            $stmt->bindParam(":search", $searchParam);
+            $stmt->bindValue(":search", $searchParam, PDO::PARAM_STR);
         }
         
         $stmt->execute();
@@ -52,12 +54,15 @@ class Cliente {
     public function search($term) {
         $query = "SELECT * FROM " . $this->table . " 
                   WHERE estado = 1 
-                  AND (nombre LIKE :term OR apellidos LIKE :term OR telefono LIKE :term)
+                  AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(apellidos, ''), ' ', 
+                       COALESCE(telefono, ''), ' ', COALESCE(email, ''), ' ', 
+                       COALESCE(rfc, '')) LIKE :term)
+                  ORDER BY nombre, apellidos
                   LIMIT 20";
         
         $stmt = $this->conn->prepare($query);
         $termParam = "%$term%";
-        $stmt->bindParam(":term", $termParam);
+        $stmt->bindValue(":term", $termParam, PDO::PARAM_STR);
         $stmt->execute();
         
         return $stmt->fetchAll();

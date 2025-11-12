@@ -66,7 +66,7 @@ class Compra {
         }
     }
 
-    public function getAll($fechaDesde = '', $fechaHasta = '', $idProveedor = '') {
+    public function getAll($fechaDesde = '', $fechaHasta = '', $idProveedor = '', $search = '', $totalMin = '', $totalMax = '') {
         $query = "SELECT c.*, 
                          p.nombre as proveedor_nombre, p.contacto as proveedor_contacto,
                          u.nombre as usuario_nombre, u.apellidos as usuario_apellidos
@@ -84,6 +84,17 @@ class Compra {
         if (!empty($idProveedor)) {
             $query .= " AND c.idProveedor = :idProveedor";
         }
+        if (!empty($search)) {
+            $query .= " AND (CONCAT(COALESCE(CAST(c.idCompra AS CHAR), ''), ' ', 
+                        COALESCE(p.nombre, ''), ' ', COALESCE(p.contacto, ''), ' ', 
+                        COALESCE(u.nombre, ''), ' ', COALESCE(u.apellidos, '')) LIKE :search)";
+        }
+        if (!empty($totalMin)) {
+            $query .= " AND c.total >= :totalMin";
+        }
+        if (!empty($totalMax)) {
+            $query .= " AND c.total <= :totalMax";
+        }
         
         $query .= " ORDER BY c.fecha DESC, c.idCompra DESC";
         
@@ -97,6 +108,16 @@ class Compra {
         }
         if (!empty($idProveedor)) {
             $stmt->bindParam(":idProveedor", $idProveedor);
+        }
+        if (!empty($search)) {
+            $searchParam = "%$search%";
+            $stmt->bindValue(":search", $searchParam, PDO::PARAM_STR);
+        }
+        if (!empty($totalMin)) {
+            $stmt->bindParam(":totalMin", $totalMin);
+        }
+        if (!empty($totalMax)) {
+            $stmt->bindParam(":totalMax", $totalMax);
         }
         
         $stmt->execute();

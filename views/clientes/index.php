@@ -16,7 +16,7 @@ $pageTitle = "Clientes";
 <div class="bg-white rounded-lg shadow p-4 mb-6">
     <form method="GET" action="<?php echo BASE_URL; ?>clientes" class="flex gap-4">
         <input type="text" name="search" value="<?php echo htmlspecialchars($search ?? ''); ?>" 
-               placeholder="Buscar por nombre, apellidos o teléfono..." 
+               placeholder="Buscar por nombre, apellidos, teléfono, email, RFC o dirección..." 
                class="flex-1 px-4 py-2 border rounded">
         <button type="submit" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded">
             <i class="fas fa-search"></i> Buscar

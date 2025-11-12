@@ -76,6 +76,13 @@ class ProveedorController {
         header('Location: ' . BASE_URL . 'proveedores');
         exit;
     }
+
+    public function search() {
+        $term = $_GET['term'] ?? '';
+        $proveedores = $this->proveedorModel->search($term);
+        header('Content-Type: application/json');
+        echo json_encode($proveedores);
+    }
 }
 ?>
 

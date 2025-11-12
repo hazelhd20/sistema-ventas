@@ -29,7 +29,9 @@ class Producto {
                   WHERE p.estado = 1";
         
         if (!empty($search)) {
-            $query .= " AND (p.nombre LIKE :search OR p.codigoBarras LIKE :search)";
+            $query .= " AND (CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.codigoBarras, ''), ' ', 
+                        COALESCE(p.descripcion, ''), ' ', COALESCE(c.nombre, ''), ' ', 
+                        COALESCE(CAST(p.codProducto AS CHAR), '')) LIKE :search)";
         }
         
         $query .= " ORDER BY p.nombre";
@@ -38,7 +40,7 @@ class Producto {
         
         if (!empty($search)) {
             $searchParam = "%$search%";
-            $stmt->bindParam(":search", $searchParam);
+            $stmt->bindValue(":search", $searchParam, PDO::PARAM_STR);
         }
         
         $stmt->execute();
@@ -60,16 +62,20 @@ class Producto {
     }
 
     public function search($term) {
-        $query = "SELECT p.*, m.abreviatura as medida_abrev
+        $query = "SELECT p.*, m.abreviatura as medida_abrev, c.nombre as categoria_nombre
                   FROM " . $this->table . " p
                   INNER JOIN medidas m ON p.idMedida = m.idMedida
+                  INNER JOIN categorias c ON p.idCategoria = c.idCategoria
                   WHERE p.estado = 1 
-                  AND (p.nombre LIKE :term OR p.codigoBarras LIKE :term)
+                  AND (CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.codigoBarras, ''), ' ', 
+                       COALESCE(p.descripcion, ''), ' ', COALESCE(c.nombre, ''), ' ', 
+                       COALESCE(CAST(p.codProducto AS CHAR), '')) LIKE :term)
+                  ORDER BY p.nombre
                   LIMIT 20";
         
         $stmt = $this->conn->prepare($query);
         $termParam = "%$term%";
-        $stmt->bindParam(":term", $termParam);
+        $stmt->bindValue(":term", $termParam, PDO::PARAM_STR);
         $stmt->execute();
         
         return $stmt->fetchAll();

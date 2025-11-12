@@ -23,7 +23,9 @@ class Proveedor {
         $query = "SELECT * FROM " . $this->table . " WHERE estado = 1";
         
         if (!empty($search)) {
-            $query .= " AND (nombre LIKE :search OR contacto LIKE :search OR telefono LIKE :search)";
+            $query .= " AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(contacto, ''), ' ', 
+                        COALESCE(telefono, ''), ' ', COALESCE(email, ''), ' ', 
+                        COALESCE(rfc, '')) LIKE :search)";
         }
         
         $query .= " ORDER BY nombre";
@@ -32,7 +34,7 @@ class Proveedor {
         
         if (!empty($search)) {
             $searchParam = "%$search%";
-            $stmt->bindParam(":search", $searchParam);
+            $stmt->bindValue(":search", $searchParam, PDO::PARAM_STR);
         }
         
         $stmt->execute();
@@ -47,6 +49,23 @@ class Proveedor {
         $stmt->execute();
         
         return $stmt->fetch();
+    }
+
+    public function search($term) {
+        $query = "SELECT * FROM " . $this->table . " 
+                  WHERE estado = 1 
+                  AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(contacto, ''), ' ', 
+                       COALESCE(telefono, ''), ' ', COALESCE(email, ''), ' ', 
+                       COALESCE(rfc, '')) LIKE :term)
+                  ORDER BY nombre
+                  LIMIT 20";
+        
+        $stmt = $this->conn->prepare($query);
+        $termParam = "%$term%";
+        $stmt->bindValue(":term", $termParam, PDO::PARAM_STR);
+        $stmt->execute();
+        
+        return $stmt->fetchAll();
     }
 
     public function create() {

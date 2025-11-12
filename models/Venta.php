@@ -68,7 +68,7 @@ class Venta {
         }
     }
 
-    public function getAll($fechaDesde = '', $fechaHasta = '', $idCliente = '') {
+    public function getAll($fechaDesde = '', $fechaHasta = '', $idCliente = '', $search = '', $idUsuario = '', $idFormaPago = '', $totalMin = '', $totalMax = '') {
         $query = "SELECT v.*, 
                          c.nombre as cliente_nombre, c.apellidos as cliente_apellidos,
                          u.nombre as usuario_nombre, u.apellidos as usuario_apellidos,
@@ -88,6 +88,24 @@ class Venta {
         if (!empty($idCliente)) {
             $query .= " AND v.idCliente = :idCliente";
         }
+        if (!empty($search)) {
+            $query .= " AND (CONCAT(COALESCE(CAST(v.idVenta AS CHAR), ''), ' ', 
+                        COALESCE(c.nombre, ''), ' ', COALESCE(c.apellidos, ''), ' ', 
+                        COALESCE(u.nombre, ''), ' ', COALESCE(u.apellidos, ''), ' ', 
+                        COALESCE(fp.nombre, '')) LIKE :search)";
+        }
+        if (!empty($idUsuario)) {
+            $query .= " AND v.idUsuario = :idUsuario";
+        }
+        if (!empty($idFormaPago)) {
+            $query .= " AND v.idFormaPago = :idFormaPago";
+        }
+        if (!empty($totalMin)) {
+            $query .= " AND v.total >= :totalMin";
+        }
+        if (!empty($totalMax)) {
+            $query .= " AND v.total <= :totalMax";
+        }
         
         $query .= " ORDER BY v.fecha DESC, v.idVenta DESC";
         
@@ -101,6 +119,22 @@ class Venta {
         }
         if (!empty($idCliente)) {
             $stmt->bindParam(":idCliente", $idCliente);
+        }
+        if (!empty($search)) {
+            $searchParam = "%$search%";
+            $stmt->bindValue(":search", $searchParam, PDO::PARAM_STR);
+        }
+        if (!empty($idUsuario)) {
+            $stmt->bindParam(":idUsuario", $idUsuario);
+        }
+        if (!empty($idFormaPago)) {
+            $stmt->bindParam(":idFormaPago", $idFormaPago);
+        }
+        if (!empty($totalMin)) {
+            $stmt->bindParam(":totalMin", $totalMin);
+        }
+        if (!empty($totalMax)) {
+            $stmt->bindParam(":totalMax", $totalMax);
         }
         
         $stmt->execute();

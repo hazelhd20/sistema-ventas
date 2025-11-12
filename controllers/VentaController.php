@@ -27,8 +27,17 @@ class VentaController {
         $fechaDesde = $_GET['fechaDesde'] ?? date('Y-m-01');
         $fechaHasta = $_GET['fechaHasta'] ?? date('Y-m-d');
         $idCliente = $_GET['idCliente'] ?? '';
+        $search = $_GET['search'] ?? '';
+        $idUsuario = $_GET['idUsuario'] ?? '';
+        $idFormaPago = $_GET['idFormaPago'] ?? '';
+        $totalMin = $_GET['totalMin'] ?? '';
+        $totalMax = $_GET['totalMax'] ?? '';
         
-        $ventas = $this->ventaModel->getAll($fechaDesde, $fechaHasta, $idCliente);
+        $ventas = $this->ventaModel->getAll($fechaDesde, $fechaHasta, $idCliente, $search, $idUsuario, $idFormaPago, $totalMin, $totalMax);
+        
+        // Obtener usuarios y formas de pago para los filtros
+        $usuarios = $this->conn->query("SELECT * FROM usuarios WHERE estado = 1 ORDER BY nombre, apellidos")->fetchAll();
+        $formasPago = $this->conn->query("SELECT * FROM forma_pago WHERE estado = 1 ORDER BY nombre")->fetchAll();
         
         $pageTitle = "Historial de Ventas";
         require_once 'views/layout/header.php';

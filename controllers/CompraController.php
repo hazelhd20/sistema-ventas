@@ -27,8 +27,14 @@ class CompraController {
         $fechaDesde = $_GET['fechaDesde'] ?? date('Y-m-01');
         $fechaHasta = $_GET['fechaHasta'] ?? date('Y-m-d');
         $idProveedor = $_GET['idProveedor'] ?? '';
+        $search = $_GET['search'] ?? '';
+        $totalMin = $_GET['totalMin'] ?? '';
+        $totalMax = $_GET['totalMax'] ?? '';
         
-        $compras = $this->compraModel->getAll($fechaDesde, $fechaHasta, $idProveedor);
+        $compras = $this->compraModel->getAll($fechaDesde, $fechaHasta, $idProveedor, $search, $totalMin, $totalMax);
+        
+        // Obtener proveedores para el filtro
+        $proveedores = $this->proveedorModel->getAll();
         
         $pageTitle = "Historial de Compras";
         require_once 'views/layout/header.php';

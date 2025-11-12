@@ -14,26 +14,56 @@ $pageTitle = "Historial de Compras";
 
 <!-- Filtros -->
 <div class="bg-white rounded-lg shadow p-4 mb-6">
-    <form method="GET" action="<?php echo BASE_URL; ?>compras" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
-            <input type="date" name="fechaDesde" value="<?php echo htmlspecialchars($fechaDesde ?? ''); ?>" 
-                   class="w-full px-3 py-2 border rounded">
+    <form method="GET" action="<?php echo BASE_URL; ?>compras" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Búsqueda General</label>
+                <input type="text" name="search" value="<?php echo htmlspecialchars($search ?? ''); ?>" 
+                       placeholder="Folio, proveedor o usuario..." 
+                       class="w-full px-3 py-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
+                <input type="date" name="fechaDesde" value="<?php echo htmlspecialchars($fechaDesde ?? ''); ?>" 
+                       class="w-full px-3 py-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Hasta</label>
+                <input type="date" name="fechaHasta" value="<?php echo htmlspecialchars($fechaHasta ?? ''); ?>" 
+                       class="w-full px-3 py-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
+                <select name="idProveedor" class="w-full px-3 py-2 border rounded">
+                    <option value="">Todos</option>
+                    <?php foreach ($proveedores ?? [] as $prov): ?>
+                        <option value="<?php echo $prov['idProveedor']; ?>" 
+                                <?php echo (isset($idProveedor) && $idProveedor == $prov['idProveedor']) ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($prov['nombre']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Total Mínimo</label>
+                <input type="number" name="totalMin" value="<?php echo htmlspecialchars($totalMin ?? ''); ?>" 
+                       placeholder="0.00" step="0.01" min="0" 
+                       class="w-full px-3 py-2 border rounded">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Total Máximo</label>
+                <input type="number" name="totalMax" value="<?php echo htmlspecialchars($totalMax ?? ''); ?>" 
+                       placeholder="0.00" step="0.01" min="0" 
+                       class="w-full px-3 py-2 border rounded">
+            </div>
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Hasta</label>
-            <input type="date" name="fechaHasta" value="<?php echo htmlspecialchars($fechaHasta ?? ''); ?>" 
-                   class="w-full px-3 py-2 border rounded">
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Proveedor</label>
-            <input type="text" name="idProveedor" value="<?php echo htmlspecialchars($idProveedor ?? ''); ?>" 
-                   placeholder="ID Proveedor" class="w-full px-3 py-2 border rounded">
-        </div>
-        <div class="flex items-end">
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+        <div class="flex gap-2">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded">
                 <i class="fas fa-search"></i> Buscar
             </button>
+            <a href="<?php echo BASE_URL; ?>compras" class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-2 rounded">
+                <i class="fas fa-times"></i> Limpiar
+            </a>
         </div>
     </form>
 </div>
