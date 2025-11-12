@@ -10,8 +10,8 @@ require_once dirname(__DIR__) . '/../config/config.php';
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-blue-600 text-white shadow-lg">
+<body class="bg-gray-100 h-screen overflow-hidden">
+    <nav class="bg-blue-600 text-white shadow-lg fixed top-0 left-0 right-0 z-50">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-4">
@@ -31,9 +31,9 @@ require_once dirname(__DIR__) . '/../config/config.php';
         </div>
     </nav>
 
-    <div class="flex">
+    <div class="flex h-full pt-16">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white shadow-lg min-h-screen">
+        <aside class="w-64 bg-white shadow-lg fixed left-0 top-16 bottom-0 overflow-y-auto z-40">
             <nav class="p-4">
                 <ul class="space-y-2">
                     <li>
@@ -110,7 +110,7 @@ require_once dirname(__DIR__) . '/../config/config.php';
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 p-6">
+        <main class="flex-1 p-6 ml-64 overflow-y-auto" style="height: calc(100vh - 64px);">
             <?php if (isset($_SESSION['success'])): ?>
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
                     <i class="fas fa-check-circle"></i> <?php echo $_SESSION['success']; unset($_SESSION['success']); ?>
