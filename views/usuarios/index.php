@@ -7,63 +7,98 @@ $pageTitle = "Usuarios";
         <h2 class="text-3xl font-bold text-gray-800">Usuarios</h2>
         <p class="text-gray-600">Gestión de usuarios del sistema</p>
     </div>
-    <button onclick="abrirModal('crear')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+    <button onclick="abrirModal('crear')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow hover:shadow-lg transition-all">
         <i class="fas fa-plus"></i> Nuevo Usuario
     </button>
 </div>
 
 <!-- Tabla de usuarios -->
 <div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            <?php if (empty($usuarios)): ?>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
                 <tr>
-                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No hay usuarios registrados</td>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
-            <?php else: ?>
-                <?php foreach ($usuarios as $usuario): ?>
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"><?php echo $usuario['idUsuario']; ?></td>
-                        <td class="px-6 py-4 text-sm text-gray-900">
-                            <?php echo htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']); ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo htmlspecialchars($usuario['usuario']); ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo htmlspecialchars($usuario['email'] ?? '-'); ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><?php echo htmlspecialchars($usuario['rol_nombre']); ?></td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <?php if ($usuario['estado'] == 1): ?>
-                                <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">Activo</span>
-                            <?php else: ?>
-                                <span class="px-2 py-1 text-xs rounded bg-red-100 text-red-800">Inactivo</span>
-                            <?php endif; ?>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="abrirModal('editar', <?php echo htmlspecialchars(json_encode($usuario)); ?>)" 
-                                    class="text-blue-600 hover:text-blue-900 mr-3">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <a href="<?php echo BASE_URL; ?>usuarios/delete/<?php echo $usuario['idUsuario']; ?>" 
-                               onclick="return confirmarEliminacion()" 
-                               class="text-red-600 hover:text-red-900">
-                                <i class="fas fa-trash"></i>
-                            </a>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <?php if (empty($usuarios)): ?>
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>No hay usuarios registrados</p>
                         </td>
                     </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+                <?php else: ?>
+                    <?php foreach ($usuarios as $usuario): ?>
+                        <tr class="hover:bg-blue-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm font-semibold text-gray-900">#<?php echo $usuario['idUsuario']; ?></span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-user text-xs text-gray-400"></i>
+                                    <span class="text-sm font-semibold text-gray-900">
+                                        <?php echo htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']); ?>
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <i class="fas fa-user-circle text-xs text-gray-400 mr-1"></i>
+                                <?php echo htmlspecialchars($usuario['usuario']); ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                <?php if (!empty($usuario['email'])): ?>
+                                    <i class="fas fa-envelope text-xs text-gray-400 mr-1"></i>
+                                    <?php echo htmlspecialchars($usuario['email']); ?>
+                                <?php else: ?>
+                                    <span class="text-gray-400">-</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-semibold">
+                                    <i class="fas fa-user-tag text-xs mr-1"></i>
+                                    <?php echo htmlspecialchars($usuario['rol_nombre']); ?>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <?php if ($usuario['estado'] == 1): ?>
+                                    <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800 font-semibold">
+                                        <i class="fas fa-check-circle"></i> Activo
+                                    </span>
+                                <?php else: ?>
+                                    <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-semibold">
+                                        <i class="fas fa-ban"></i> Inactivo
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center gap-2">
+                                    <button onclick="abrirModal('editar', <?php echo htmlspecialchars(json_encode($usuario)); ?>)" 
+                                            class="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-100 rounded-lg transition-all"
+                                            title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="<?php echo BASE_URL; ?>usuarios/delete/<?php echo $usuario['idUsuario']; ?>" 
+                                       onclick="return confirmarEliminacion()" 
+                                       class="text-red-600 hover:text-red-900 p-2 hover:bg-red-100 rounded-lg transition-all"
+                                       title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Modal -->
@@ -141,12 +176,12 @@ $pageTitle = "Usuarios";
                 
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="cerrarModal()" 
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">
-                        Cancelar
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all">
+                        <i class="fas fa-times"></i> Cancelar
                     </button>
                     <button type="submit" 
-                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        Guardar
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow hover:shadow-lg transition-all">
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>
             </form>
