@@ -141,7 +141,7 @@ function generarReporte() {
                 `;
             }
             
-            resultados.innerHTML = '<div class="card space-y-4">' + html + '</div>';
+            resultados.innerHTML = '<div class="space-y-4">' + html + '</div>';
         })
         .catch(() => {
             resultados.innerHTML = `
