@@ -44,11 +44,19 @@ class ReporteController {
         $stmt->bindParam(":fechaHasta", $fechaHasta);
         $stmt->execute();
         $ventas = $stmt->fetchAll();
-        
-        $total = array_sum(array_column($ventas, 'total'));
+
+        $data = array_map(function($v) {
+            return [
+                'id' => $v['idVenta'],
+                'fecha' => date('d/m/Y H:i', strtotime($v['fecha'])),
+                'usuario' => trim(($v['usuario_nombre'] ?? '') . ' ' . ($v['usuario_apellidos'] ?? '')),
+                'cliente' => $v['cliente_nombre'] ? trim($v['cliente_nombre'] . ' ' . ($v['cliente_apellidos'] ?? '')) : 'General',
+                'total' => $v['total'],
+            ];
+        }, $ventas);
         
         header('Content-Type: application/json');
-        echo json_encode(['ventas' => $ventas, 'total' => $total]);
+        echo json_encode($data);
     }
 
     public function compras() {
@@ -69,11 +77,19 @@ class ReporteController {
         $stmt->bindParam(":fechaHasta", $fechaHasta);
         $stmt->execute();
         $compras = $stmt->fetchAll();
-        
-        $total = array_sum(array_column($compras, 'total'));
+
+        $data = array_map(function($c) {
+            return [
+                'id' => $c['idCompra'],
+                'fecha' => date('d/m/Y H:i', strtotime($c['fecha'])),
+                'usuario' => trim(($c['usuario_nombre'] ?? '') . ' ' . ($c['usuario_apellidos'] ?? '')),
+                'proveedor' => $c['proveedor_nombre'] ?? '',
+                'total' => $c['total'],
+            ];
+        }, $compras);
         
         header('Content-Type: application/json');
-        echo json_encode(['compras' => $compras, 'total' => $total]);
+        echo json_encode($data);
     }
 }
 ?>

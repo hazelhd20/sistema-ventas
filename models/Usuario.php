@@ -109,6 +109,14 @@ class Usuario {
         return $stmt->execute();
     }
 
+    public function toggleEstado() {
+        $query = "UPDATE " . $this->table . " SET estado = :estado WHERE idUsuario = :idUsuario";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":estado", $this->estado);
+        $stmt->bindParam(":idUsuario", $this->idUsuario);
+        return $stmt->execute();
+    }
+
     public function delete($id) {
         $query = "UPDATE " . $this->table . " SET estado = 0 WHERE idUsuario = :id";
         

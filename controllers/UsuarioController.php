@@ -93,6 +93,40 @@ class UsuarioController {
         header('Location: ' . BASE_URL . 'usuarios');
         exit;
     }
+
+    public function toggle() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . BASE_URL . 'usuarios');
+            exit;
+        }
+
+        $id = $_POST['idUsuario'] ?? null;
+        if (!$id) {
+            $_SESSION['error'] = 'Usuario no encontrado';
+            header('Location: ' . BASE_URL . 'usuarios');
+            exit;
+        }
+
+        $usuario = $this->usuarioModel->getById($id);
+        if (!$usuario) {
+            $_SESSION['error'] = 'Usuario no encontrado';
+            header('Location: ' . BASE_URL . 'usuarios');
+            exit;
+        }
+
+        $nuevoEstado = $usuario['estado'] == ESTADO_ACTIVO ? ESTADO_INACTIVO : ESTADO_ACTIVO;
+        $this->usuarioModel->idUsuario = $id;
+        $this->usuarioModel->estado = $nuevoEstado;
+
+        if ($this->usuarioModel->toggleEstado()) {
+            $_SESSION['success'] = 'Estado actualizado';
+        } else {
+            $_SESSION['error'] = 'No se pudo actualizar el estado';
+        }
+
+        header('Location: ' . BASE_URL . 'usuarios');
+        exit;
+    }
 }
 ?>
 
