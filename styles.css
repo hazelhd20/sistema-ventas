@@ -118,6 +118,67 @@ body {
     box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
 }
 
+/* Estilos de compatibilidad para pantallas legacy */
+.bg-white.rounded-lg.shadow {
+    border-radius: 1rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+}
+
+.bg-white.rounded-lg.shadow .bg-white.rounded-lg.shadow {
+    box-shadow: none;
+}
+
+button.bg-blue-600,
+a.bg-blue-600 {
+    background: #a8d8ea;
+    color: #0f172a;
+    border: 1px solid #93c5fd;
+}
+
+button.bg-blue-600:hover,
+a.bg-blue-600:hover {
+    background: #7cc4e1;
+}
+
+button.bg-gray-400,
+a.bg-gray-400 {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+}
+
+button.bg-green-600,
+a.bg-green-600 {
+    background: #b8e0d2;
+    color: #0f172a;
+    border: 1px solid #99d5c0;
+}
+
+input.border-2.border-blue-300,
+select.border-2.border-blue-300,
+textarea.border-2.border-blue-300,
+input.border.border-gray-300,
+select.border.border-gray-300,
+textarea.border.border-gray-300 {
+    border-radius: 0.75rem;
+    border-color: #e5e7eb;
+    padding: 0.65rem 0.85rem;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+input.border-2.border-blue-300:focus,
+select.border-2.border-blue-300:focus,
+textarea.border-2.border-blue-300:focus,
+input.border.border-gray-300:focus,
+select.border.border-gray-300:focus,
+textarea.border.border-gray-300:focus {
+    outline: none;
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.25);
+}
+
 .table-shell {
     border-radius: 1rem;
     overflow: hidden;
