@@ -154,7 +154,7 @@ class VentaController {
         
         if (!$venta) {
             $_SESSION['error'] = 'Venta no encontrada';
-            header('Location: ' . BASE_URL . 'ventas');
+            header('Location: ' . BASE_URL . 'ventas/index');
             exit;
         }
         
@@ -167,7 +167,7 @@ class VentaController {
     public function anular($id) {
         if ($_SESSION['user_rol'] != ROL_ADMIN) {
             $_SESSION['error'] = 'Solo los administradores pueden anular ventas';
-            header('Location: ' . BASE_URL . 'ventas');
+            header('Location: ' . BASE_URL . 'ventas/index');
             exit;
         }
         
@@ -177,7 +177,7 @@ class VentaController {
             $_SESSION['error'] = 'Error al anular la venta';
         }
         
-        header('Location: ' . BASE_URL . 'ventas');
+        header('Location: ' . BASE_URL . 'ventas/index');
         exit;
     }
 
@@ -186,7 +186,7 @@ class VentaController {
         
         if (!$venta) {
             $_SESSION['error'] = 'Venta no encontrada';
-            header('Location: ' . BASE_URL . 'ventas');
+            header('Location: ' . BASE_URL . 'ventas/index');
             exit;
         }
         

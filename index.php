@@ -39,7 +39,14 @@ $routeMap = [
 
 // Determinar controlador y metodo
 $controller = $routeMap[$requestedRoute] ?? ucfirst($requestedRoute) . 'Controller';
-$method = isset($url[1]) && $url[1] !== '' ? $url[1] : 'index';
+
+// Definir metodos iniciales por modulo (primer vista al entrar)
+$defaultMethods = [
+    'ventas' => 'nueva',
+    'compras' => 'nueva',
+];
+
+$method = isset($url[1]) && $url[1] !== '' ? $url[1] : ($defaultMethods[$requestedRoute] ?? 'index');
 $params = array_slice($url, 2);
 
 // Verificar si el controlador existe

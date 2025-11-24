@@ -24,9 +24,14 @@ $oldObservaciones = old('observaciones', '');
             <h2 class="text-2xl font-semibold text-gray-800">Nueva Compra</h2>
             <p class="text-gray-600">Registre una nueva compra a proveedor</p>
         </div>
-        <span class="pill bg-blue-pastel/70 text-gray-800">
-            <i data-lucide="keyboard" class="h-4 w-4 mr-1"></i> Enter para agregar productos
-        </span>
+        <div class="flex items-center gap-2">
+            <span class="pill bg-blue-pastel/70 text-gray-800">
+                <i data-lucide="keyboard" class="h-4 w-4 mr-1"></i> Enter para agregar productos
+            </span>
+            <a href="<?php echo BASE_URL; ?>compras/index" class="btn-primary">
+                <i data-lucide="history" class="h-4 w-4 mr-1"></i> Ver historial
+            </a>
+        </div>
     </div>
 
     <form id="formCompra" method="POST" action="<?php echo BASE_URL; ?>compras/create">

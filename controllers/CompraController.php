@@ -120,7 +120,7 @@ class CompraController {
         
         if (!$compra) {
             $_SESSION['error'] = 'Compra no encontrada';
-            header('Location: ' . BASE_URL . 'compras');
+            header('Location: ' . BASE_URL . 'compras/index');
             exit;
         }
         
@@ -133,7 +133,7 @@ class CompraController {
     public function anular($id) {
         if ($_SESSION['user_rol'] != ROL_ADMIN) {
             $_SESSION['error'] = 'Solo los administradores pueden anular compras';
-            header('Location: ' . BASE_URL . 'compras');
+            header('Location: ' . BASE_URL . 'compras/index');
             exit;
         }
         
@@ -143,7 +143,7 @@ class CompraController {
             $_SESSION['error'] = 'Error al anular la compra';
         }
         
-        header('Location: ' . BASE_URL . 'compras');
+        header('Location: ' . BASE_URL . 'compras/index');
         exit;
     }
 
@@ -152,7 +152,7 @@ class CompraController {
         
         if (!$compra) {
             $_SESSION['error'] = 'Compra no encontrada';
-            header('Location: ' . BASE_URL . 'compras');
+            header('Location: ' . BASE_URL . 'compras/index');
             exit;
         }
         

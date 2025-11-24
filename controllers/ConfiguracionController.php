@@ -5,6 +5,8 @@ require_once 'config/database.php';
 class ConfiguracionController {
     private $auth;
     private $conn;
+    // Permite gestionar catalogos (no deshabilitado)
+    private $configDisabled = false;
 
     public function __construct() {
         $this->auth = new AuthController();
@@ -18,14 +20,21 @@ class ConfiguracionController {
         $categorias = $this->conn->query("SELECT * FROM categorias ORDER BY estado DESC, nombre")->fetchAll();
         $medidas = $this->conn->query("SELECT * FROM medidas ORDER BY estado DESC, nombre")->fetchAll();
         $formasPago = $this->conn->query("SELECT * FROM forma_pago ORDER BY estado DESC, nombre")->fetchAll();
+        $configDisabled = $this->configDisabled;
         
-        $pageTitle = "Configuración";
+        $pageTitle = "Configuracion";
         require_once 'views/layout/header.php';
         require_once 'views/configuracion/index.php';
         require_once 'views/layout/footer.php';
     }
 
     public function categoria() {
+        if ($this->configDisabled) {
+            $_SESSION['error'] = 'El modulo de categorias esta deshabilitado';
+            header('Location: ' . BASE_URL . 'configuracion');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $accion = $_POST['accion'] ?? '';
             $id = $_POST['id'] ?? null;
@@ -34,26 +43,30 @@ class ConfiguracionController {
 
             if ($accion === 'crear') {
                 if ($this->nombreExiste('categorias', 'idCategoria', $nombre)) {
-                    $_SESSION['error'] = 'La categoría ya existe';
+                    $_SESSION['error'] = 'La categoria ya existe';
                     header('Location: ' . BASE_URL . 'configuracion');
                     exit;
                 }
                 $stmt = $this->conn->prepare("INSERT INTO categorias (nombre, descripcion, estado) VALUES (?, ?, 1)");
                 $stmt->execute([$nombre, $descripcion]);
-                $_SESSION['success'] = 'Categoría creada exitosamente';
+                $_SESSION['success'] = 'Categoria creada exitosamente';
             } elseif ($accion === 'editar' && $id) {
                 if ($this->nombreExiste('categorias', 'idCategoria', $nombre, $id)) {
-                    $_SESSION['error'] = 'La categoría ya existe';
+                    $_SESSION['error'] = 'La categoria ya existe';
                     header('Location: ' . BASE_URL . 'configuracion');
                     exit;
                 }
                 $stmt = $this->conn->prepare("UPDATE categorias SET nombre = ?, descripcion = ? WHERE idCategoria = ?");
                 $stmt->execute([$nombre, $descripcion, $id]);
-                $_SESSION['success'] = 'Categoría actualizada exitosamente';
-            } elseif ($accion === 'eliminar' && $id) {
+                $_SESSION['success'] = 'Categoria actualizada exitosamente';
+            } elseif ($accion === 'desactivar' && $id) {
                 $stmt = $this->conn->prepare("UPDATE categorias SET estado = 0 WHERE idCategoria = ?");
                 $stmt->execute([$id]);
-                $_SESSION['success'] = 'Categoría eliminada exitosamente';
+                $_SESSION['success'] = 'Categoria desactivada';
+            } elseif ($accion === 'activar' && $id) {
+                $stmt = $this->conn->prepare("UPDATE categorias SET estado = 1 WHERE idCategoria = ?");
+                $stmt->execute([$id]);
+                $_SESSION['success'] = 'Categoria activada';
             }
         }
         
@@ -62,6 +75,12 @@ class ConfiguracionController {
     }
 
     public function medida() {
+        if ($this->configDisabled) {
+            $_SESSION['error'] = 'El modulo de medidas esta deshabilitado';
+            header('Location: ' . BASE_URL . 'configuracion');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $accion = $_POST['accion'] ?? '';
             $id = $_POST['id'] ?? null;
@@ -86,10 +105,14 @@ class ConfiguracionController {
                 $stmt = $this->conn->prepare("UPDATE medidas SET nombre = ?, abreviatura = ? WHERE idMedida = ?");
                 $stmt->execute([$nombre, $abreviatura, $id]);
                 $_SESSION['success'] = 'Medida actualizada exitosamente';
-            } elseif ($accion === 'eliminar' && $id) {
+            } elseif ($accion === 'desactivar' && $id) {
                 $stmt = $this->conn->prepare("UPDATE medidas SET estado = 0 WHERE idMedida = ?");
                 $stmt->execute([$id]);
-                $_SESSION['success'] = 'Medida eliminada exitosamente';
+                $_SESSION['success'] = 'Medida desactivada';
+            } elseif ($accion === 'activar' && $id) {
+                $stmt = $this->conn->prepare("UPDATE medidas SET estado = 1 WHERE idMedida = ?");
+                $stmt->execute([$id]);
+                $_SESSION['success'] = 'Medida activada';
             }
         }
         
@@ -98,6 +121,12 @@ class ConfiguracionController {
     }
 
     public function formaPago() {
+        if ($this->configDisabled) {
+            $_SESSION['error'] = 'El modulo de formas de pago esta deshabilitado';
+            header('Location: ' . BASE_URL . 'configuracion');
+            exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $accion = $_POST['accion'] ?? '';
             $id = $_POST['id'] ?? null;
@@ -122,10 +151,14 @@ class ConfiguracionController {
                 $stmt = $this->conn->prepare("UPDATE forma_pago SET nombre = ?, descripcion = ? WHERE idFormaPago = ?");
                 $stmt->execute([$nombre, $descripcion, $id]);
                 $_SESSION['success'] = 'Forma de pago actualizada exitosamente';
-            } elseif ($accion === 'eliminar' && $id) {
+            } elseif ($accion === 'desactivar' && $id) {
                 $stmt = $this->conn->prepare("UPDATE forma_pago SET estado = 0 WHERE idFormaPago = ?");
                 $stmt->execute([$id]);
-                $_SESSION['success'] = 'Forma de pago eliminada exitosamente';
+                $_SESSION['success'] = 'Forma de pago desactivada';
+            } elseif ($accion === 'activar' && $id) {
+                $stmt = $this->conn->prepare("UPDATE forma_pago SET estado = 1 WHERE idFormaPago = ?");
+                $stmt->execute([$id]);
+                $_SESSION['success'] = 'Forma de pago activada';
             }
         }
         
@@ -150,4 +183,3 @@ class ConfiguracionController {
     }
 }
 ?>
-

@@ -15,7 +15,7 @@ $pageTitle = "Historial de Compras";
     </div>
 
     <div class="card">
-        <form method="GET" action="<?php echo BASE_URL; ?>compras" id="formFiltros" class="space-y-4">
+        <form method="GET" action="<?php echo BASE_URL; ?>compras/index" id="formFiltros" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 <div class="lg:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -75,7 +75,7 @@ $pageTitle = "Historial de Compras";
                 <button type="submit" class="btn-primary">
                     <i data-lucide="search" class="h-4 w-4 mr-2"></i> Buscar
                 </button>
-                <a href="<?php echo BASE_URL; ?>compras" class="btn-ghost">
+                <a href="<?php echo BASE_URL; ?>compras/index" class="btn-ghost">
                     <i data-lucide="x" class="h-4 w-4 mr-2"></i> Limpiar
                 </a>
             </div>

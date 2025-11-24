@@ -1,5 +1,6 @@
 <?php
 $pageTitle = "Configuracion";
+$configDisabled = $configDisabled ?? false;
 ?>
 
 <div class="max-w-7xl mx-auto space-y-6">
@@ -23,19 +24,34 @@ $pageTitle = "Configuracion";
             <div class="space-y-2">
                 <?php foreach ($categorias as $cat): ?>
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                        <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($cat['nombre']); ?></span>
+                        <div>
+                            <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($cat['nombre']); ?></span>
+                            <span class="ml-2 text-xs <?php echo ((int)$cat['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
+                                <?php echo ((int)$cat['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            </span>
+                        </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalCategoria('editar', <?php echo htmlspecialchars(json_encode($cat)); ?>)"
                                     class="btn-ghost px-3 py-1">
                                 <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                             </button>
-                            <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline">
-                                <input type="hidden" name="accion" value="eliminar">
-                                <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
-                                <button type="submit" onclick="return confirmarEliminacion()" class="btn-ghost px-3 py-1 text-red-700">
-                                    <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
-                                </button>
-                            </form>
+                            <?php if ((int)$cat['estado'] === 1): ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline">
+                                    <input type="hidden" name="accion" value="desactivar">
+                                    <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta categoria?')" class="btn-ghost px-3 py-1 text-red-700">
+                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline">
+                                    <input type="hidden" name="accion" value="activar">
+                                    <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
+                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -53,19 +69,34 @@ $pageTitle = "Configuracion";
             <div class="space-y-2">
                 <?php foreach ($medidas as $med): ?>
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                        <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></span>
+                        <div>
+                            <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></span>
+                            <span class="ml-2 text-xs <?php echo ((int)$med['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
+                                <?php echo ((int)$med['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            </span>
+                        </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalMedida('editar', <?php echo htmlspecialchars(json_encode($med)); ?>)"
                                     class="btn-ghost px-3 py-1">
                                 <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                             </button>
-                            <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline">
-                                <input type="hidden" name="accion" value="eliminar">
-                                <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
-                                <button type="submit" onclick="return confirmarEliminacion()" class="btn-ghost px-3 py-1 text-red-700">
-                                    <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
-                                </button>
-                            </form>
+                            <?php if ((int)$med['estado'] === 1): ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline">
+                                    <input type="hidden" name="accion" value="desactivar">
+                                    <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta medida?')" class="btn-ghost px-3 py-1 text-red-700">
+                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline">
+                                    <input type="hidden" name="accion" value="activar">
+                                    <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
+                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -83,19 +114,34 @@ $pageTitle = "Configuracion";
             <div class="space-y-2">
                 <?php foreach ($formasPago as $fp): ?>
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
-                        <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($fp['nombre']); ?></span>
+                        <div>
+                            <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($fp['nombre']); ?></span>
+                            <span class="ml-2 text-xs <?php echo ((int)$fp['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
+                                <?php echo ((int)$fp['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            </span>
+                        </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalFormaPago('editar', <?php echo htmlspecialchars(json_encode($fp)); ?>)"
                                     class="btn-ghost px-3 py-1">
                                 <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                             </button>
-                            <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline">
-                                <input type="hidden" name="accion" value="eliminar">
-                                <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
-                                <button type="submit" onclick="return confirmarEliminacion()" class="btn-ghost px-3 py-1 text-red-700">
-                                    <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
-                                </button>
-                            </form>
+                            <?php if ((int)$fp['estado'] === 1): ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline">
+                                    <input type="hidden" name="accion" value="desactivar">
+                                    <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta forma de pago?')" class="btn-ghost px-3 py-1 text-red-700">
+                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline">
+                                    <input type="hidden" name="accion" value="activar">
+                                    <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
+                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    </button>
+                                </form>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
