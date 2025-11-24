@@ -15,9 +15,9 @@ class ConfiguracionController {
     }
 
     public function index() {
-        $categorias = $this->conn->query("SELECT * FROM categorias WHERE estado = 1 ORDER BY nombre")->fetchAll();
-        $medidas = $this->conn->query("SELECT * FROM medidas WHERE estado = 1 ORDER BY nombre")->fetchAll();
-        $formasPago = $this->conn->query("SELECT * FROM forma_pago WHERE estado = 1 ORDER BY nombre")->fetchAll();
+        $categorias = $this->conn->query("SELECT * FROM categorias ORDER BY estado DESC, nombre")->fetchAll();
+        $medidas = $this->conn->query("SELECT * FROM medidas ORDER BY estado DESC, nombre")->fetchAll();
+        $formasPago = $this->conn->query("SELECT * FROM forma_pago ORDER BY estado DESC, nombre")->fetchAll();
         
         $pageTitle = "Configuración";
         require_once 'views/layout/header.php';

@@ -77,6 +77,7 @@ class CompraController {
             // Validar y procesar detalles
             $detalles = json_decode($_POST['detalles'] ?? '[]', true);
             if (!is_array($detalles) || count($detalles) === 0) {
+                $_SESSION['old'] = $_POST;
                 $_SESSION['error'] = 'Agrega al menos un producto a la compra';
                 header('Location: ' . BASE_URL . 'compras/nueva');
                 exit;
@@ -88,6 +89,7 @@ class CompraController {
                 $precio = isset($detalle['precioCompra']) ? (float) $detalle['precioCompra'] : -1;
 
                 if (!$codProducto || $cantidad <= 0 || $precio < 0) {
+                    $_SESSION['old'] = $_POST;
                     $_SESSION['error'] = 'Cada producto de la compra debe tener codigo, cantidad y precio validos';
                     header('Location: ' . BASE_URL . 'compras/nueva');
                     exit;
@@ -99,10 +101,13 @@ class CompraController {
             $idCompra = $this->compraModel->create();
             
             if ($idCompra) {
+                unset($_SESSION['old']);
+                $_SESSION['compra_draft_clear'] = true;
                 $_SESSION['success'] = 'Compra registrada exitosamente';
                 header('Location: ' . BASE_URL . 'compras/detalle/' . $idCompra);
                 exit;
             } else {
+                $_SESSION['old'] = $_POST;
                 $_SESSION['error'] = 'Error al registrar la compra';
                 header('Location: ' . BASE_URL . 'compras/nueva');
                 exit;

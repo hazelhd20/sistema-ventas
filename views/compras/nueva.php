@@ -1,5 +1,20 @@
 <?php
 $pageTitle = "Nueva Compra";
+
+$oldDetallesCompra = [];
+if (isset($_SESSION['old']['detalles'])) {
+    $decoded = json_decode($_SESSION['old']['detalles'], true);
+    if (is_array($decoded)) {
+        $oldDetallesCompra = $decoded;
+    }
+    unset($_SESSION['old']['detalles']);
+}
+$oldTotalCompra = $_SESSION['old']['total'] ?? null;
+if (isset($_SESSION['old']['total'])) {
+    unset($_SESSION['old']['total']);
+}
+$oldIdProveedor = old('idProveedor', '');
+$oldObservaciones = old('observaciones', '');
 ?>
 
 <div class="max-w-7xl mx-auto space-y-6">
@@ -26,16 +41,16 @@ $pageTitle = "Nueva Compra";
                         <select name="idProveedor" id="idProveedor" required class="input-modern">
                             <option value="">Seleccione un proveedor...</option>
                             <?php foreach ($proveedores as $proveedor): ?>
-                                <option value="<?php echo $proveedor['idProveedor']; ?>">
+                                <option value="<?php echo $proveedor['idProveedor']; ?>" <?php echo ($oldIdProveedor == $proveedor['idProveedor']) ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($proveedor['nombre']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    
+
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>
-                        <textarea name="observaciones" id="observaciones" rows="3" class="input-modern"></textarea>
+                        <textarea name="observaciones" id="observaciones" rows="3" class="input-modern"><?php echo htmlspecialchars($oldObservaciones); ?></textarea>
                     </div>
                 </div>
                 
@@ -118,9 +133,13 @@ $pageTitle = "Nueva Compra";
     const totalEl = document.getElementById('totalCompra');
     const detallesInput = document.getElementById('detallesCompra');
     const totalInput = document.getElementById('totalCompraInput');
+    const observacionesInput = document.getElementById('observaciones');
+    const draftKey = 'compraDraft';
     let searchTimeout;
     let ultimoResultado = [];
     let carrito = [];
+    const oldCarrito = <?php echo json_encode($oldDetallesCompra); ?>;
+    const oldTotal = <?php echo json_encode($oldTotalCompra); ?>;
 
     const emptyState = `
         <div class="text-center text-gray-500 py-4">
@@ -299,9 +318,14 @@ $pageTitle = "Nueva Compra";
             codProducto: item.codProducto,
             cantidad: Number(item.cantidad ?? 1),
             precioCompra: Number(item.precio ?? 0),
-            subtotal: Number(item.precio ?? 0) * Number(item.cantidad ?? 1)
+            subtotal: Number(item.precio ?? 0) * Number(item.cantidad ?? 1),
+            nombre: item.nombre || '',
+            categoria: item.categoria || '',
+            medida: item.medida || '',
+            stock: item.stock ?? ''
         })));
         if (totalInput) totalInput.value = subtotal.toFixed(2);
+        guardarBorrador();
     }
 
     function agregarProductoDesdeBusqueda(producto) {
@@ -342,6 +366,69 @@ $pageTitle = "Nueva Compra";
     function eliminarProductoCompra(idx) {
         carrito.splice(idx, 1);
         renderCarrito();
+        guardarBorrador();
+    }
+
+    function guardarBorrador() {
+        try {
+            const data = {
+                carrito,
+                idProveedor: document.getElementById('idProveedor') ? document.getElementById('idProveedor').value : '',
+                observaciones: observacionesInput ? observacionesInput.value : '',
+            };
+            localStorage.setItem(draftKey, JSON.stringify(data));
+        } catch (e) {
+            // Ignorar errores de almacenamiento
+        }
+    }
+
+    function cargarBorrador() {
+        try {
+            const raw = localStorage.getItem(draftKey);
+            if (!raw) return null;
+            return JSON.parse(raw);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function restaurarEstado() {
+        if (Array.isArray(oldCarrito) && oldCarrito.length > 0) {
+            carrito = oldCarrito.map(item => ({
+                codProducto: item.codProducto,
+                nombre: item.nombre || '',
+                categoria: item.categoria || '',
+                medida: item.medida || '',
+                precio: Number(item.precio ?? item.precioCompra ?? 0),
+                cantidad: Number(item.cantidad ?? 1),
+                stock: item.stock ?? ''
+            }));
+            renderCarrito();
+        }
+
+        const borrador = (!oldCarrito || oldCarrito.length === 0) ? cargarBorrador() : null;
+        if (borrador && Array.isArray(borrador.carrito) && carrito.length === 0) {
+            carrito = borrador.carrito.map(item => ({
+                codProducto: item.codProducto,
+                nombre: item.nombre || '',
+                categoria: item.categoria || '',
+                medida: item.medida || '',
+                precio: Number(item.precio ?? item.precioCompra ?? 0),
+                cantidad: Number(item.cantidad ?? 1),
+                stock: item.stock ?? ''
+            }));
+            renderCarrito();
+        }
+
+        if (borrador && borrador.idProveedor && document.getElementById('idProveedor') && document.getElementById('idProveedor').value === '') {
+            document.getElementById('idProveedor').value = borrador.idProveedor;
+        }
+
+        if (borrador && borrador.observaciones && observacionesInput && observacionesInput.value === '') {
+            observacionesInput.value = borrador.observaciones;
+        }
+
+        guardarBorrador();
     }
 
     window.buscarProductos = buscarProductos;
@@ -371,5 +458,20 @@ $pageTitle = "Nueva Compra";
             actualizarTotales();
         });
     }
+
+    const proveedorSelect = document.getElementById('idProveedor');
+    if (proveedorSelect) {
+        proveedorSelect.addEventListener('change', guardarBorrador);
+    }
+    if (observacionesInput) {
+        observacionesInput.addEventListener('input', guardarBorrador);
+    }
+
+    // Limpiar borrador si el servidor lo marcó (éxito previo)
+    <?php if (!empty($_SESSION['compra_draft_clear'])): ?>
+    try { localStorage.removeItem('compraDraft'); } catch (e) {}
+    <?php unset($_SESSION['compra_draft_clear']); endif; ?>
+
+    restaurarEstado();
 })();
 </script>

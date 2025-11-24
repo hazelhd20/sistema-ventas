@@ -83,6 +83,7 @@ class VentaController {
             // Validar y procesar detalles
             $detalles = json_decode($_POST['detalles'] ?? '[]', true);
             if (!is_array($detalles) || count($detalles) === 0) {
+                $_SESSION['old'] = $_POST;
                 $_SESSION['error'] = 'Agrega al menos un producto a la venta';
                 header('Location: ' . BASE_URL . 'ventas/nueva');
                 exit;
@@ -94,6 +95,7 @@ class VentaController {
                 $codProducto = $detalle['codProducto'] ?? null;
                 $cantidad = isset($detalle['cantidad']) ? (int) $detalle['cantidad'] : 0;
                 if (!$codProducto || $cantidad <= 0) {
+                    $_SESSION['old'] = $_POST;
                     $_SESSION['error'] = 'Los productos de la venta deben tener cantidad valida';
                     header('Location: ' . BASE_URL . 'ventas/nueva');
                     exit;
@@ -115,11 +117,13 @@ class VentaController {
 
             foreach ($cantidadesPorProducto as $cod => $cantidadSolicitada) {
                 if (!isset($stocks[$cod])) {
+                    $_SESSION['old'] = $_POST;
                     $_SESSION['error'] = "El producto con codigo $cod no existe o esta inactivo";
                     header('Location: ' . BASE_URL . 'ventas/nueva');
                     exit;
                 }
                 if ($stocks[$cod]['existencia'] < $cantidadSolicitada) {
+                    $_SESSION['old'] = $_POST;
                     $_SESSION['error'] = "Stock insuficiente para {$stocks[$cod]['nombre']} (disponible: {$stocks[$cod]['existencia']}, solicitado: $cantidadSolicitada)";
                     header('Location: ' . BASE_URL . 'ventas/nueva');
                     exit;
@@ -131,10 +135,13 @@ class VentaController {
             $idVenta = $this->ventaModel->create();
             
             if ($idVenta) {
+                unset($_SESSION['old']);
+                $_SESSION['venta_draft_clear'] = true;
                 $_SESSION['success'] = 'Venta registrada exitosamente';
                 header('Location: ' . BASE_URL . 'ventas/detalle/' . $idVenta);
                 exit;
             } else {
+                $_SESSION['old'] = $_POST;
                 $_SESSION['error'] = 'Error al registrar la venta';
                 header('Location: ' . BASE_URL . 'ventas/nueva');
                 exit;
