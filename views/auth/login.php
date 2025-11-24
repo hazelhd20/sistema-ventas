@@ -124,17 +124,6 @@ $usuario = e(old('usuario', ''));
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <div>
-                        <p class="font-semibold text-gray-700">Demo admin</p>
-                        <p>admin / admin123</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-semibold text-gray-700">Otro usuario</p>
-                        <p>Configuralo en la tabla usuarios</p>
-                    </div>
-                </div>
-
                 <button type="submit"
                         class="group w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-gray-900 bg-blue-pastel hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 transition items-center space-x-2">
                     <i data-lucide="log-in" class="h-5 w-5"></i>

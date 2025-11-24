@@ -80,8 +80,52 @@ class VentaController {
             $this->ventaModel->estado = 1;
             $this->ventaModel->observaciones = $_POST['observaciones'] ?? '';
             
-            // Procesar detalles
-            $detalles = json_decode($_POST['detalles'], true);
+            // Validar y procesar detalles
+            $detalles = json_decode($_POST['detalles'] ?? '[]', true);
+            if (!is_array($detalles) || count($detalles) === 0) {
+                $_SESSION['error'] = 'Agrega al menos un producto a la venta';
+                header('Location: ' . BASE_URL . 'ventas/nueva');
+                exit;
+            }
+
+            // Sumar cantidades por producto para validar stock de forma segura
+            $cantidadesPorProducto = [];
+            foreach ($detalles as $detalle) {
+                $codProducto = $detalle['codProducto'] ?? null;
+                $cantidad = isset($detalle['cantidad']) ? (int) $detalle['cantidad'] : 0;
+                if (!$codProducto || $cantidad <= 0) {
+                    $_SESSION['error'] = 'Los productos de la venta deben tener cantidad valida';
+                    header('Location: ' . BASE_URL . 'ventas/nueva');
+                    exit;
+                }
+                $cantidadesPorProducto[$codProducto] = ($cantidadesPorProducto[$codProducto] ?? 0) + $cantidad;
+            }
+
+            // Consultar existencias y validar stock disponible
+            $placeholders = implode(',', array_fill(0, count($cantidadesPorProducto), '?'));
+            $stmt = $this->conn->prepare("SELECT codProducto, nombre, existencia FROM productos WHERE codProducto IN ($placeholders) AND estado = 1");
+            $stmt->execute(array_keys($cantidadesPorProducto));
+            $stocks = [];
+            foreach ($stmt->fetchAll() as $row) {
+                $stocks[$row['codProducto']] = [
+                    'nombre' => $row['nombre'],
+                    'existencia' => (int) $row['existencia'],
+                ];
+            }
+
+            foreach ($cantidadesPorProducto as $cod => $cantidadSolicitada) {
+                if (!isset($stocks[$cod])) {
+                    $_SESSION['error'] = "El producto con codigo $cod no existe o esta inactivo";
+                    header('Location: ' . BASE_URL . 'ventas/nueva');
+                    exit;
+                }
+                if ($stocks[$cod]['existencia'] < $cantidadSolicitada) {
+                    $_SESSION['error'] = "Stock insuficiente para {$stocks[$cod]['nombre']} (disponible: {$stocks[$cod]['existencia']}, solicitado: $cantidadSolicitada)";
+                    header('Location: ' . BASE_URL . 'ventas/nueva');
+                    exit;
+                }
+            }
+
             $this->ventaModel->detalles = $detalles;
             
             $idVenta = $this->ventaModel->create();
