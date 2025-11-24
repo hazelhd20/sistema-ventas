@@ -47,7 +47,7 @@ $pageTitle = "Productos";
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-200" id="productosTbody">
                     <?php if (empty($productos)): ?>
                         <tr>
                             <td colspan="7" class="px-6 py-8 text-center text-gray-500">
@@ -114,29 +114,166 @@ $pageTitle = "Productos";
 </div>
 
 <script>
-let searchTimeout;
-document.getElementById('searchInput')?.addEventListener('input', function(e) {
-    clearTimeout(searchTimeout);
-    const value = e.target.value.trim();
-    if (value.length >= 2 || value.length === 0) {
-        searchTimeout = setTimeout(() => {
-            if (value.length >= 2 || value.length === 0) {
-                document.getElementById('formBusqueda').submit();
-            }
-        }, 500);
-    }
-});
+(function() {
+    const baseUrl = '<?php echo BASE_URL; ?>';
+    const searchInput = document.getElementById('searchInput');
+    const formBusqueda = document.getElementById('formBusqueda');
+    const tbody = document.getElementById('productosTbody');
+    const initialRows = tbody ? tbody.innerHTML : '';
+    let searchTimeout;
 
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-        }
+    const emptyRow = `
+        <tr>
+            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
+                <p>No hay productos registrados</p>
+            </td>
+        </tr>`;
+
+    const loadingRow = `
+        <tr>
+            <td colspan="7" class="px-6 py-6 text-center text-gray-500">
+                <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
+                Buscando...
+            </td>
+        </tr>`;
+
+    const errorRow = `
+        <tr>
+            <td colspan="7" class="px-6 py-6 text-center text-red-600">
+                <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
+                No se pudo cargar la búsqueda
+            </td>
+        </tr>`;
+
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    const renderRow = (p) => {
+        const existencia = Number(p.existencia ?? 0);
+        const stockMin = Number(p.stockMinimo ?? 0);
+        const sinStock = existencia <= 0;
+        const stockBajo = existencia <= stockMin;
+        const badgeClass = sinStock ? 'bg-pink-pastel/70' : (stockBajo ? 'bg-peach-pastel/70' : 'bg-green-pastel/70');
+        const codigoLinea = p.codigoBarras ? `<span class="text-xs text-gray-500 block">Codigo: ${escapeHtml(p.codigoBarras)}</span>` : '';
+        const iconoStock = sinStock
+            ? '<i data-lucide="alert-octagon" class="h-4 w-4 text-red-500" title="Sin stock"></i>'
+            : (stockBajo ? '<i data-lucide="alert-triangle" class="h-4 w-4 text-amber-500" title="Stock bajo"></i>' : '');
+        const precio = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(Number(p.precio ?? 0))
+            : `$${Number(p.precio ?? 0).toFixed(2)}`;
+        const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
+
+        return `
+            <tr class="hover:bg-blue-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm font-semibold text-gray-900">${escapeHtml(p.codProducto)}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-900">${escapeHtml(p.nombre)}</span>
+                        ${iconoStock}
+                    </div>
+                    ${codigoLinea}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    ${escapeHtml(p.categoria_nombre)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm font-bold text-blue-600">${precio}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="pill ${badgeClass} text-gray-800">
+                        ${escapeHtml(existencia)} ${escapeHtml(p.medida_abrev)}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span class="text-xs">${escapeHtml(stockMin)} ${escapeHtml(p.medida_abrev)}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex items-center gap-2">
+                        <button onclick="abrirModal('editar', ${productoJson})"
+                                class="btn-ghost px-3 py-2">
+                            <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
+                        </button>
+                        <a href="${baseUrl}productos/delete/${encodeURIComponent(p.codProducto)}"
+                           onclick="return confirmarEliminacion()"
+                           class="btn-ghost px-3 py-2 text-red-700">
+                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    };
+
+    function focusSearchInput() {
+        if (!searchInput) return;
+        const len = searchInput.value.length;
+        searchInput.focus();
+        searchInput.setSelectionRange(len, len);
     }
-});
+
+    function handleSearch() {
+        if (!searchInput || !tbody) return;
+        const value = searchInput.value.trim();
+
+        if (value.length === 0) {
+            tbody.innerHTML = initialRows;
+            if (window.lucide) lucide.createIcons();
+            return;
+        }
+        if (value.length < 2) {
+            return;
+        }
+
+        tbody.innerHTML = loadingRow;
+
+        fetch(`${baseUrl}productos/search?term=${encodeURIComponent(value)}`)
+            .then(res => res.ok ? res.json() : Promise.reject())
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = emptyRow;
+                } else {
+                    tbody.innerHTML = data.map(renderRow).join('');
+                }
+                if (window.lucide) lucide.createIcons();
+            })
+            .catch(() => {
+                tbody.innerHTML = errorRow;
+            });
+    }
+
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(handleSearch, 300);
+    });
+
+    formBusqueda?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        handleSearch();
+    });
+
+    focusSearchInput();
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            focusSearchInput();
+        }
+    });
+
+    if (searchInput && searchInput.value.trim().length >= 2) {
+        handleSearch();
+    }
+})();
 </script>
 
 <!-- Modal -->

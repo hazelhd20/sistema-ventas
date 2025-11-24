@@ -46,7 +46,7 @@ $pageTitle = "Clientes";
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-200" id="clientesTbody">
                     <?php if (empty($clientes)): ?>
                         <tr>
                             <td colspan="5" class="px-6 py-8 text-center text-gray-500">
@@ -109,29 +109,156 @@ $pageTitle = "Clientes";
 </div>
 
 <script>
-let searchTimeout;
-document.getElementById('searchInput')?.addEventListener('input', function(e) {
-    clearTimeout(searchTimeout);
-    const value = e.target.value.trim();
-    if (value.length >= 2 || value.length === 0) {
-        searchTimeout = setTimeout(() => {
-            if (value.length >= 2 || value.length === 0) {
-                document.getElementById('formBusqueda').submit();
-            }
-        }, 500);
-    }
-});
+(function() {
+    const baseUrl = '<?php echo BASE_URL; ?>';
+    const searchInput = document.getElementById('searchInput');
+    const formBusqueda = document.getElementById('formBusqueda');
+    const tbody = document.getElementById('clientesTbody');
+    const initialRows = tbody ? tbody.innerHTML : '';
+    let searchTimeout;
 
-document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.focus();
-            searchInput.select();
-        }
+    const emptyRow = `
+        <tr>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
+                <p>No hay clientes registrados</p>
+            </td>
+        </tr>`;
+
+    const loadingRow = `
+        <tr>
+            <td colspan="5" class="px-6 py-6 text-center text-gray-500">
+                <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
+                Buscando...
+            </td>
+        </tr>`;
+
+    const errorRow = `
+        <tr>
+            <td colspan="5" class="px-6 py-6 text-center text-red-600">
+                <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
+                No se pudo cargar la búsqueda
+            </td>
+        </tr>`;
+
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    const renderRow = (c) => {
+        const nombreCompleto = `${c.nombre || ''} ${c.apellidos || ''}`.trim();
+        const rfcLinea = c.rfc ? `<span class="text-xs text-gray-500 block">RFC: ${escapeHtml(c.rfc)}</span>` : '';
+        const telefono = c.telefono
+            ? `<i data-lucide="phone" class="h-4 w-4 inline text-gray-400 mr-1"></i>${escapeHtml(c.telefono)}`
+            : '<span class="text-gray-400">-</span>';
+        const email = c.email
+            ? `<i data-lucide="mail" class="h-4 w-4 inline text-gray-400 mr-1"></i>${escapeHtml(c.email)}`
+            : '<span class="text-gray-400">-</span>';
+        const clienteJson = JSON.stringify(c).replace(/"/g, '&quot;');
+
+        return `
+            <tr class="hover:bg-blue-50 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm font-semibold text-gray-900">#${escapeHtml(c.idCliente)}</span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="user" class="h-4 w-4 text-gray-400"></i>
+                        <span class="text-sm font-semibold text-gray-900">
+                            ${escapeHtml(nombreCompleto)}
+                        </span>
+                    </div>
+                    ${rfcLinea}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    ${telefono}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    ${email}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div class="flex items-center gap-2">
+                        <button onclick='abrirModal("editar", ${clienteJson})' class="btn-ghost px-3 py-2">
+                            <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
+                        </button>
+                        <a href="${baseUrl}clientes/delete/${encodeURIComponent(c.idCliente)}"
+                           class="btn-ghost px-3 py-2 text-red-700"
+                           onclick="return confirmarEliminacion('Seguro de eliminar este cliente?');">
+                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        `;
+    };
+
+    function focusSearchInput() {
+        if (!searchInput) return;
+        const len = searchInput.value.length;
+        searchInput.focus();
+        searchInput.setSelectionRange(len, len);
     }
-});
+
+    function handleSearch() {
+        if (!searchInput || !tbody) return;
+        const value = searchInput.value.trim();
+
+        if (value.length === 0) {
+            tbody.innerHTML = initialRows;
+            if (window.lucide) lucide.createIcons();
+            return;
+        }
+        if (value.length < 2) {
+            return;
+        }
+
+        tbody.innerHTML = loadingRow;
+
+        fetch(`${baseUrl}clientes/search?term=${encodeURIComponent(value)}`)
+            .then(res => res.ok ? res.json() : Promise.reject())
+            .then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    tbody.innerHTML = emptyRow;
+                } else {
+                    tbody.innerHTML = data.map(renderRow).join('');
+                }
+                if (window.lucide) lucide.createIcons();
+            })
+            .catch(() => {
+                tbody.innerHTML = errorRow;
+            });
+    }
+
+    searchInput?.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(handleSearch, 300);
+    });
+
+    formBusqueda?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        handleSearch();
+    });
+
+    focusSearchInput();
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            focusSearchInput();
+        }
+    });
+
+    // Si viene con término pre-cargado, dispara búsqueda inicial
+    if (searchInput && searchInput.value.trim().length >= 2) {
+        handleSearch();
+    }
+})();
 </script>
 
 <!-- Modal -->
