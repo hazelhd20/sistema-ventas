@@ -20,7 +20,7 @@ class Cliente {
     }
 
     public function getAll($search = '') {
-        $query = "SELECT * FROM " . $this->table . " WHERE estado = 1";
+        $query = "SELECT * FROM " . $this->table . " WHERE 1=1";
         
         if (!empty($search)) {
             $query .= " AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(apellidos, ''), ' ', 
@@ -53,8 +53,7 @@ class Cliente {
 
     public function search($term) {
         $query = "SELECT * FROM " . $this->table . " 
-                  WHERE estado = 1 
-                  AND (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(apellidos, ''), ' ', 
+                  WHERE (CONCAT(COALESCE(nombre, ''), ' ', COALESCE(apellidos, ''), ' ', 
                        COALESCE(telefono, ''), ' ', COALESCE(email, ''), ' ', 
                        COALESCE(rfc, '')) LIKE :term)
                   ORDER BY nombre, apellidos
@@ -111,11 +110,16 @@ class Cliente {
     }
 
     public function delete($id) {
-        $query = "UPDATE " . $this->table . " SET estado = 0 WHERE idCliente = :id";
-        
+        return $this->setEstado($id, 0);
+    }
+
+    public function setEstado($id, int $estado) {
+        $query = "UPDATE " . $this->table . " SET estado = :estado WHERE idCliente = :id";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":estado", $estado, PDO::PARAM_INT);
         $stmt->bindParam(":id", $id);
-        
+
         return $stmt->execute();
     }
 }

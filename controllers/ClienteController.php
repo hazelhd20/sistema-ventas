@@ -66,12 +66,23 @@ class ClienteController {
     }
 
     public function delete($id) {
-        if ($this->clienteModel->delete($id)) {
-            $_SESSION['success'] = 'Cliente eliminado exitosamente';
+        if ($this->clienteModel->setEstado($id, 0)) {
+            $_SESSION['success'] = 'Cliente desactivado exitosamente';
         } else {
-            $_SESSION['error'] = 'Error al eliminar el cliente';
+            $_SESSION['error'] = 'Error al desactivar el cliente';
         }
         
+        header('Location: ' . BASE_URL . 'clientes');
+        exit;
+    }
+
+    public function activate($id) {
+        if ($this->clienteModel->setEstado($id, 1)) {
+            $_SESSION['success'] = 'Cliente activado exitosamente';
+        } else {
+            $_SESSION['error'] = 'Error al activar el cliente';
+        }
+
         header('Location: ' . BASE_URL . 'clientes');
         exit;
     }

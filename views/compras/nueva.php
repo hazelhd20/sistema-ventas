@@ -226,7 +226,7 @@ $oldObservaciones = old('observaciones', '');
 
         resultados.innerHTML = loadingState;
         searchTimeout = setTimeout(() => {
-            fetch(`${baseUrl}productos/search?term=${encodeURIComponent(term)}`)
+            fetch(`${baseUrl}productos/search?term=${encodeURIComponent(term)}&soloActivos=1`)
                 .then(res => res.ok ? res.json() : Promise.reject())
                 .then(data => {
                     ultimoResultado = Array.isArray(data) ? data : [];

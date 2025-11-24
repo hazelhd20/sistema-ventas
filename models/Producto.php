@@ -26,7 +26,7 @@ class Producto {
                   FROM " . $this->table . " p
                   INNER JOIN categorias c ON p.idCategoria = c.idCategoria
                   INNER JOIN medidas m ON p.idMedida = m.idMedida
-                  WHERE p.estado = 1";
+                  WHERE 1=1";
         
         if (!empty($search)) {
             $query .= " AND (CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.codigoBarras, ''), ' ', 
@@ -61,17 +61,21 @@ class Producto {
         return $stmt->fetch();
     }
 
-    public function search($term) {
+    public function search($term, bool $soloActivos = false) {
         $query = "SELECT p.*, m.abreviatura as medida_abrev, c.nombre as categoria_nombre
                   FROM " . $this->table . " p
                   INNER JOIN medidas m ON p.idMedida = m.idMedida
                   INNER JOIN categorias c ON p.idCategoria = c.idCategoria
-                  WHERE p.estado = 1 
-                  AND (CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.codigoBarras, ''), ' ', 
+                  WHERE (CONCAT(COALESCE(p.nombre, ''), ' ', COALESCE(p.codigoBarras, ''), ' ', 
                        COALESCE(p.descripcion, ''), ' ', COALESCE(c.nombre, ''), ' ', 
-                       COALESCE(CAST(p.codProducto AS CHAR), '')) LIKE :term)
-                  ORDER BY p.nombre
-                  LIMIT 20";
+                       COALESCE(CAST(p.codProducto AS CHAR), '')) LIKE :term)";
+
+        if ($soloActivos) {
+            $query .= " AND p.estado = 1";
+        }
+
+        $query .= " ORDER BY p.nombre
+                    LIMIT 20";
         
         $stmt = $this->conn->prepare($query);
         $termParam = "%$term%";
@@ -129,11 +133,16 @@ class Producto {
     }
 
     public function delete($id) {
-        $query = "UPDATE " . $this->table . " SET estado = 0 WHERE codProducto = :id";
-        
+        return $this->setEstado($id, 0);
+    }
+
+    public function setEstado($id, int $estado) {
+        $query = "UPDATE " . $this->table . " SET estado = :estado WHERE codProducto = :id";
+
         $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":estado", $estado, PDO::PARAM_INT);
         $stmt->bindParam(":id", $id);
-        
+
         return $stmt->execute();
     }
 

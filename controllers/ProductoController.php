@@ -68,7 +68,8 @@ class ProductoController {
             $this->productoModel->stockMinimo = $_POST['stockMinimo'];
             $codigoBarras = trim($_POST['codigoBarras'] ?? '');
             $this->productoModel->codigoBarras = $codigoBarras === '' ? null : $codigoBarras;
-            $this->productoModel->estado = $_POST['estado'];
+            // Si no se envia estado desde el formulario, mantener activo por defecto
+            $this->productoModel->estado = $_POST['estado'] ?? 1;
             
             if ($this->codigoBarrasExiste($this->productoModel->codigoBarras, $this->productoModel->codProducto)) {
                 $_SESSION['error'] = 'El código de barras ya está registrado';
@@ -84,19 +85,31 @@ class ProductoController {
     }
 
     public function delete($id) {
-        if ($this->productoModel->delete($id)) {
-            $_SESSION['success'] = 'Producto eliminado exitosamente';
+        if ($this->productoModel->setEstado($id, 0)) {
+            $_SESSION['success'] = 'Producto desactivado exitosamente';
         } else {
-            $_SESSION['error'] = 'Error al eliminar el producto';
+            $_SESSION['error'] = 'Error al desactivar el producto';
         }
         
         header('Location: ' . BASE_URL . 'productos');
         exit;
     }
 
+    public function activate($id) {
+        if ($this->productoModel->setEstado($id, 1)) {
+            $_SESSION['success'] = 'Producto activado exitosamente';
+        } else {
+            $_SESSION['error'] = 'Error al activar el producto';
+        }
+
+        header('Location: ' . BASE_URL . 'productos');
+        exit;
+    }
+
     public function search() {
         $term = $_GET['term'] ?? '';
-        $productos = $this->productoModel->search($term);
+        $soloActivos = isset($_GET['soloActivos']) ? (int) $_GET['soloActivos'] === 1 : false;
+        $productos = $this->productoModel->search($term, $soloActivos);
         header('Content-Type: application/json');
         echo json_encode($productos);
     }

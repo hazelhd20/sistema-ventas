@@ -24,9 +24,6 @@ $pageTitle = "Proveedores";
                 <i data-lucide="search" class="absolute left-3 top-3 text-gray-400 h-5 w-5"></i>
             </div>
             <div class="flex items-center gap-2">
-                <button type="submit" class="btn-primary">
-                    <i data-lucide="search" class="h-4 w-4 mr-2"></i> Buscar
-                </button>
                 <a href="<?php echo BASE_URL; ?>proveedores" class="btn-ghost">
                     <i data-lucide="x" class="h-4 w-4 mr-2"></i> Limpiar
                 </a>
@@ -44,13 +41,14 @@ $pageTitle = "Proveedores";
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contacto</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Telefono</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="proveedoresTbody">
                     <?php if (empty($proveedores)): ?>
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                                 <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
                                 <p>No hay proveedores registrados</p>
                             </td>
@@ -96,16 +94,31 @@ $pageTitle = "Proveedores";
                                         <span class="text-gray-400">-</span>
                                     <?php endif; ?>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <?php if ((int)($proveedor['estado'] ?? 0) === 1): ?>
+                                        <span class="pill bg-green-pastel/70 text-gray-800">Activo</span>
+                                    <?php else: ?>
+                                        <span class="pill bg-gray-200 text-gray-700">Inactivo</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
                                         <button onclick='abrirModal("editar", <?php echo json_encode($proveedor); ?>)' class="btn-ghost px-3 py-2">
                                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                                         </button>
-                                        <a href="<?php echo BASE_URL; ?>proveedores/delete/<?php echo $proveedor['idProveedor']; ?>"
-                                           class="btn-ghost px-3 py-2 text-red-700"
-                                           onclick="return confirmarEliminacion('Seguro de eliminar este proveedor?');">
-                                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
-                                        </a>
+                                        <?php if ((int)($proveedor['estado'] ?? 0) === 1): ?>
+                                            <a href="<?php echo BASE_URL; ?>proveedores/delete/<?php echo $proveedor['idProveedor']; ?>"
+                                               class="btn-ghost px-3 py-2 text-red-700"
+                                               onclick="return confirmarEliminacion('Desea desactivar este proveedor?');">
+                                                <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="<?php echo BASE_URL; ?>proveedores/activate/<?php echo $proveedor['idProveedor']; ?>"
+                                               class="btn-ghost px-3 py-2 text-green-700"
+                                               onclick="return confirmarEliminacion('Desea activar este proveedor?');">
+                                                <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                            </a>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                             </tr>
@@ -128,7 +141,7 @@ $pageTitle = "Proveedores";
 
     const emptyRow = `
         <tr>
-            <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                 <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
                 <p>No hay proveedores registrados</p>
             </td>
@@ -136,7 +149,7 @@ $pageTitle = "Proveedores";
 
     const loadingRow = `
         <tr>
-            <td colspan="6" class="px-6 py-6 text-center text-gray-500">
+            <td colspan="7" class="px-6 py-6 text-center text-gray-500">
                 <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
                 Buscando...
             </td>
@@ -144,7 +157,7 @@ $pageTitle = "Proveedores";
 
     const errorRow = `
         <tr>
-            <td colspan="6" class="px-6 py-6 text-center text-red-600">
+            <td colspan="7" class="px-6 py-6 text-center text-red-600">
                 <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
                 No se pudo cargar la búsqueda
             </td>
@@ -172,6 +185,8 @@ $pageTitle = "Proveedores";
             ? `<i data-lucide="mail" class="h-4 w-4 inline text-gray-400 mr-1"></i>${escapeHtml(p.email)}`
             : '<span class="text-gray-400">-</span>';
         const proveedorJson = JSON.stringify(p).replace(/"/g, '&quot;');
+        const estadoLabel = Number(p.estado) === 1 ? 'Activo' : 'Inactivo';
+        const estadoClass = Number(p.estado) === 1 ? 'text-green-700' : 'text-gray-500';
 
         return `
             <tr class="hover:bg-blue-50 transition-colors">
@@ -196,16 +211,25 @@ $pageTitle = "Proveedores";
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     ${email}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${estadoClass}">
+                    ${estadoLabel}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center gap-2">
                         <button onclick='abrirModal("editar", ${proveedorJson})' class="btn-ghost px-3 py-2">
                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                         </button>
-                        <a href="${baseUrl}proveedores/delete/${encodeURIComponent(p.idProveedor)}"
-                           class="btn-ghost px-3 py-2 text-red-700"
-                           onclick="return confirmarEliminacion('Seguro de eliminar este proveedor?');">
-                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Eliminar
-                        </a>
+                        ${Number(p.estado) === 1
+                            ? `<a href="${baseUrl}proveedores/delete/${encodeURIComponent(p.idProveedor)}"
+                                   class="btn-ghost px-3 py-2 text-red-700"
+                                   onclick="return confirmarEliminacion('Desea desactivar este proveedor?');">
+                                    <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                               </a>`
+                            : `<a href="${baseUrl}proveedores/activate/${encodeURIComponent(p.idProveedor)}"
+                                   class="btn-ghost px-3 py-2 text-green-700"
+                                   onclick="return confirmarEliminacion('Desea activar este proveedor?');">
+                                    <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                               </a>`}
                     </div>
                 </td>
             </tr>

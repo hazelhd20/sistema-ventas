@@ -67,12 +67,23 @@ class ProveedorController {
     }
 
     public function delete($id) {
-        if ($this->proveedorModel->delete($id)) {
-            $_SESSION['success'] = 'Proveedor eliminado exitosamente';
+        if ($this->proveedorModel->setEstado($id, 0)) {
+            $_SESSION['success'] = 'Proveedor desactivado exitosamente';
         } else {
-            $_SESSION['error'] = 'Error al eliminar el proveedor';
+            $_SESSION['error'] = 'Error al desactivar el proveedor';
         }
         
+        header('Location: ' . BASE_URL . 'proveedores');
+        exit;
+    }
+
+    public function activate($id) {
+        if ($this->proveedorModel->setEstado($id, 1)) {
+            $_SESSION['success'] = 'Proveedor activado exitosamente';
+        } else {
+            $_SESSION['error'] = 'Error al activar el proveedor';
+        }
+
         header('Location: ' . BASE_URL . 'proveedores');
         exit;
     }
