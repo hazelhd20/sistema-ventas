@@ -2,7 +2,7 @@
 $pageTitle = "Nueva Venta";
 ?>
 
-<div class="max-w-7xl mx-auto space-y-6">
+<form id="formVenta" method="POST" action="<?php echo BASE_URL; ?>ventas/create" class="max-w-7xl mx-auto space-y-6">
     <div class="card flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
             <p class="text-sm text-gray-500 uppercase tracking-wide">Ventas</p>
@@ -72,6 +72,20 @@ $pageTitle = "Nueva Venta";
         <div class="lg:col-span-1">
             <div class="card sticky top-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Carrito de Venta</h3>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Forma de pago *</label>
+                    <select name="idFormaPago" id="idFormaPago" class="input-modern" required>
+                        <option value="">Seleccione...</option>
+                        <?php foreach ($formasPago as $fp): ?>
+                            <option value="<?php echo $fp['idFormaPago']; ?>"><?php echo htmlspecialchars($fp['nombre']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Observaciones</label>
+                    <textarea name="observaciones" id="observaciones" rows="2" class="input-modern"></textarea>
+                </div>
                 
                 <div id="carritoVacio" class="text-center text-gray-500 py-8">
                     <i data-lucide="shopping-cart" class="h-10 w-10 mx-auto mb-2"></i>
@@ -98,7 +112,269 @@ $pageTitle = "Nueva Venta";
                         <i data-lucide="check" class="h-5 w-5 mr-2"></i> Procesar Venta
                     </button>
                 </div>
+                <input type="hidden" name="detalles" id="detallesVenta">
+                <input type="hidden" name="total" id="totalVentaInput">
             </div>
         </div>
     </div>
-</div>
+</form>
+
+<script>
+(function() {
+    const baseUrl = '<?php echo BASE_URL; ?>';
+    const input = document.getElementById('buscarProducto');
+    const resultados = document.getElementById('resultadosProductos');
+    const mensaje = document.getElementById('mensajeBusqueda');
+    const lista = document.getElementById('listaProductos');
+    const carritoVacio = document.getElementById('carritoVacio');
+    const carritoProductos = document.getElementById('carritoProductos');
+    const subtotalEl = document.getElementById('subtotalVenta');
+    const totalEl = document.getElementById('totalVenta');
+    const detallesInput = document.getElementById('detallesVenta');
+    const totalInput = document.getElementById('totalVentaInput');
+    const idFormaPago = document.getElementById('idFormaPago');
+    let searchTimeout;
+    let ultimoResultado = [];
+    let carrito = [];
+
+    const emptyState = `
+        <div class="text-center text-gray-500 py-4">
+            <i data-lucide="inbox" class="h-6 w-6 mx-auto mb-2"></i>
+            <p>No se encontraron productos</p>
+        </div>`;
+
+    const loadingState = `
+        <div class="text-center text-gray-500 py-4">
+            <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
+            Buscando...
+        </div>`;
+
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    function renderProducto(p) {
+        const disponible = Number(p.existencia ?? 0);
+        const medida = escapeHtml(p.medida_abrev ?? '');
+        const precio = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(Number(p.precio ?? 0))
+            : `$${Number(p.precio ?? 0).toFixed(2)}`;
+        const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
+        const stockInfo = `${disponible} ${medida}`;
+        const categoria = escapeHtml(p.categoria_nombre ?? '');
+        const codigo = p.codigoBarras ? `<span class="text-xs text-gray-500 block">Codigo: ${escapeHtml(p.codigoBarras)}</span>` : '';
+
+        return `
+            <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between hover:border-blue-200 hover:bg-blue-50 transition">
+                <div>
+                    <div class="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <i data-lucide="package" class="h-4 w-4 text-gray-400"></i>
+                        ${escapeHtml(p.nombre ?? '')}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">${categoria}</div>
+                    ${codigo}
+                    <div class="text-xs text-gray-500 mt-1">Stock: ${escapeHtml(stockInfo)}</div>
+                </div>
+                <div class="text-right space-y-2">
+                    <div class="text-sm font-bold text-blue-600">${precio}</div>
+                    <button type="button" class="btn-primary px-3 py-1 text-sm"
+                            onclick="agregarProductoDesdeBusqueda(${productoJson})">
+                        <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Agregar
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function mostrarMensajeInicial() {
+        if (!mensaje) return;
+        mensaje.classList.remove('hidden');
+        if (resultados) resultados.innerHTML = '';
+    }
+
+    function ocultarMensaje() {
+        if (mensaje) mensaje.classList.add('hidden');
+    }
+
+    function buscarProductos() {
+        if (!input || !resultados) return;
+        const term = input.value.trim();
+        clearTimeout(searchTimeout);
+
+        if (term.length === 0) {
+            ocultarMensaje();
+            resultados.innerHTML = '';
+            ultimoResultado = [];
+            return;
+        }
+
+        if (term.length < 2) {
+            mostrarMensajeInicial();
+            ultimoResultado = [];
+            return;
+        }
+
+        resultados.innerHTML = loadingState;
+        searchTimeout = setTimeout(() => {
+            fetch(`${baseUrl}productos/search?term=${encodeURIComponent(term)}`)
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .then(data => {
+                    ultimoResultado = Array.isArray(data) ? data : [];
+                    if (ultimoResultado.length === 0) {
+                        resultados.innerHTML = emptyState;
+                    } else {
+                        resultados.innerHTML = ultimoResultado.map(renderProducto).join('');
+                    }
+                    ocultarMensaje();
+                    if (window.lucide) lucide.createIcons();
+                })
+                .catch(() => {
+                    resultados.innerHTML = `
+                        <div class="text-center text-red-600 py-4">
+                            <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
+                            No se pudo buscar productos
+                        </div>`;
+                    if (window.lucide) lucide.createIcons();
+                });
+        }, 250);
+    }
+
+    function manejarTeclado(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (ultimoResultado.length > 0) {
+                if (typeof window.agregarProductoDesdeBusqueda === 'function') {
+                    window.agregarProductoDesdeBusqueda(ultimoResultado[0]);
+                }
+            }
+        }
+    }
+
+    function renderCarrito() {
+        if (!lista || !carritoVacio || !carritoProductos) return;
+
+        if (carrito.length === 0) {
+            carritoVacio.classList.remove('hidden');
+            carritoProductos.classList.add('hidden');
+            lista.innerHTML = '';
+            actualizarTotales();
+            return;
+        }
+
+        carritoVacio.classList.add('hidden');
+        carritoProductos.classList.remove('hidden');
+
+        lista.innerHTML = carrito.map((item, idx) => {
+            const precio = Number(item.precio ?? 0);
+            const cantidad = Number(item.cantidad ?? 1);
+            const totalLinea = precio * cantidad;
+            return `
+                <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <div class="text-sm font-semibold text-gray-900">${escapeHtml(item.nombre)}</div>
+                        <div class="text-xs text-gray-500">${escapeHtml(item.categoria || '')}</div>
+                        <div class="text-xs text-gray-500">Stock: ${escapeHtml(item.stock ?? '')} ${escapeHtml(item.medida || '')}</div>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-500">Cant.</label>
+                            <input type="number" min="1" class="input-modern w-20 text-right" value="${cantidad}"
+                                   onchange="actualizarCantidadVenta(${idx}, this.value)">
+                        </div>
+                        <div class="text-sm font-bold text-blue-600">${formatearMoneda ? formatearMoneda(precio) : '$' + precio.toFixed(2)}</div>
+                        <div class="text-xs text-gray-500">Linea: ${formatearMoneda ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
+                        <button type="button" class="btn-ghost px-2 py-1 text-red-700 text-xs"
+                                onclick="eliminarProductoVenta(${idx})">
+                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Quitar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (window.lucide) lucide.createIcons();
+        actualizarTotales();
+    }
+
+    function actualizarTotales() {
+        const subtotal = carrito.reduce((acc, item) => acc + Number(item.precio ?? 0) * Number(item.cantidad ?? 1), 0);
+        if (subtotalEl) subtotalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (detallesInput) detallesInput.value = JSON.stringify(carrito.map(item => ({
+            codProducto: item.codProducto,
+            cantidad: Number(item.cantidad ?? 1),
+            precio: Number(item.precio ?? 0),
+            subtotal: Number(item.precio ?? 0) * Number(item.cantidad ?? 1)
+        })));
+        if (totalInput) totalInput.value = subtotal.toFixed(2);
+    }
+
+    function agregarProductoDesdeBusqueda(producto) {
+        if (!producto || !producto.codProducto) return;
+        const existente = carrito.find(p => Number(p.codProducto) === Number(producto.codProducto));
+        if (existente) {
+            existente.cantidad = Number(existente.cantidad ?? 1) + 1;
+        } else {
+            carrito.push({
+                codProducto: producto.codProducto,
+                nombre: producto.nombre || '',
+                categoria: producto.categoria_nombre || '',
+                medida: producto.medida_abrev || '',
+                precio: Number(producto.precio ?? 0),
+                cantidad: 1,
+                stock: producto.existencia ?? ''
+            });
+        }
+        renderCarrito();
+    }
+
+    function actualizarCantidadVenta(idx, valor) {
+        const cantidad = Math.max(1, Number(valor) || 1);
+        if (carrito[idx]) {
+            carrito[idx].cantidad = cantidad;
+            renderCarrito();
+        }
+    }
+
+    function eliminarProductoVenta(idx) {
+        carrito.splice(idx, 1);
+        renderCarrito();
+    }
+
+    function procesarVenta() {
+        if (carrito.length === 0) {
+            alert('Agrega al menos un producto.');
+            return;
+        }
+        if (!idFormaPago || !idFormaPago.value) {
+            alert('Selecciona una forma de pago.');
+            return;
+        }
+        actualizarTotales();
+        document.getElementById('formVenta').submit();
+    }
+
+    window.buscarProductos = buscarProductos;
+    window.manejarTeclado = manejarTeclado;
+    window.agregarProductoDesdeBusqueda = agregarProductoDesdeBusqueda;
+    window.actualizarCantidadVenta = actualizarCantidadVenta;
+    window.eliminarProductoVenta = eliminarProductoVenta;
+    window.procesarVenta = procesarVenta;
+
+    if (input) {
+        input.addEventListener('input', buscarProductos);
+        // Búsqueda inicial si ya hay texto (por ejemplo, si se mantiene el estado)
+        if (input.value.trim().length >= 2) {
+            buscarProductos();
+        } else {
+            mostrarMensajeInicial();
+        }
+    }
+})();
+</script>

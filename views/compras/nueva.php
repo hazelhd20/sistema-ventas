@@ -97,8 +97,279 @@ $pageTitle = "Nueva Compra";
                             <i data-lucide="check" class="h-5 w-5 mr-2"></i> Registrar Compra
                         </button>
                     </div>
+                    <input type="hidden" name="detalles" id="detallesCompra">
+                    <input type="hidden" name="total" id="totalCompraInput">
                 </div>
             </div>
         </div>
     </form>
 </div>
+
+<script>
+(function() {
+    const baseUrl = '<?php echo BASE_URL; ?>';
+    const input = document.getElementById('buscarProducto');
+    const resultados = document.getElementById('resultadosProductos');
+    const mensaje = document.getElementById('mensajeBusqueda');
+    const lista = document.getElementById('listaProductos');
+    const carritoVacio = document.getElementById('carritoVacio');
+    const carritoProductos = document.getElementById('carritoProductos');
+    const subtotalEl = document.getElementById('subtotalCompra');
+    const totalEl = document.getElementById('totalCompra');
+    const detallesInput = document.getElementById('detallesCompra');
+    const totalInput = document.getElementById('totalCompraInput');
+    let searchTimeout;
+    let ultimoResultado = [];
+    let carrito = [];
+
+    const emptyState = `
+        <div class="text-center text-gray-500 py-4">
+            <i data-lucide="inbox" class="h-6 w-6 mx-auto mb-2"></i>
+            <p>No se encontraron productos</p>
+        </div>`;
+
+    const loadingState = `
+        <div class="text-center text-gray-500 py-4">
+            <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
+            Buscando...
+        </div>`;
+
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    };
+
+    function renderProducto(p) {
+        const disponible = Number(p.existencia ?? 0);
+        const medida = escapeHtml(p.medida_abrev ?? '');
+        const precio = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(Number(p.precio ?? 0))
+            : `$${Number(p.precio ?? 0).toFixed(2)}`;
+        const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
+        const stockInfo = `${disponible} ${medida}`;
+        const categoria = escapeHtml(p.categoria_nombre ?? '');
+        const codigo = p.codigoBarras ? `<span class="text-xs text-gray-500 block">Codigo: ${escapeHtml(p.codigoBarras)}</span>` : '';
+
+        return `
+            <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between hover:border-blue-200 hover:bg-blue-50 transition">
+                <div>
+                    <div class="flex items-center gap-2 text-sm font-semibold text-gray-900">
+                        <i data-lucide="package" class="h-4 w-4 text-gray-400"></i>
+                        ${escapeHtml(p.nombre ?? '')}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">${categoria}</div>
+                    ${codigo}
+                    <div class="text-xs text-gray-500 mt-1">Stock: ${escapeHtml(stockInfo)}</div>
+                </div>
+                <div class="text-right space-y-2">
+                    <div class="text-sm font-bold text-blue-600">${precio}</div>
+                    <button type="button" class="btn-primary px-3 py-1 text-sm"
+                            onclick="agregarProductoDesdeBusqueda(${productoJson})">
+                        <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Agregar
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function mostrarMensajeInicial() {
+        if (!mensaje) return;
+        mensaje.classList.remove('hidden');
+        if (resultados) resultados.innerHTML = '';
+    }
+
+    function ocultarMensaje() {
+        if (mensaje) mensaje.classList.add('hidden');
+    }
+
+    function buscarProductos() {
+        if (!input || !resultados) return;
+        const term = input.value.trim();
+        clearTimeout(searchTimeout);
+
+        if (term.length === 0) {
+            ocultarMensaje();
+            resultados.innerHTML = '';
+            ultimoResultado = [];
+            return;
+        }
+
+        if (term.length < 2) {
+            mostrarMensajeInicial();
+            ultimoResultado = [];
+            return;
+        }
+
+        resultados.innerHTML = loadingState;
+        searchTimeout = setTimeout(() => {
+            fetch(`${baseUrl}productos/search?term=${encodeURIComponent(term)}`)
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .then(data => {
+                    ultimoResultado = Array.isArray(data) ? data : [];
+                    if (ultimoResultado.length === 0) {
+                        resultados.innerHTML = emptyState;
+                    } else {
+                        resultados.innerHTML = ultimoResultado.map(renderProducto).join('');
+                    }
+                    ocultarMensaje();
+                    if (window.lucide) lucide.createIcons();
+                })
+                .catch(() => {
+                    resultados.innerHTML = `
+                        <div class="text-center text-red-600 py-4">
+                            <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
+                            No se pudo buscar productos
+                        </div>`;
+                    if (window.lucide) lucide.createIcons();
+                });
+        }, 250);
+    }
+
+    function manejarTeclado(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (ultimoResultado.length > 0) {
+                if (typeof window.agregarProductoDesdeBusqueda === 'function') {
+                    window.agregarProductoDesdeBusqueda(ultimoResultado[0]);
+                }
+            }
+        }
+    }
+
+    function renderCarrito() {
+        if (!lista || !carritoVacio || !carritoProductos) return;
+
+        if (carrito.length === 0) {
+            carritoVacio.classList.remove('hidden');
+            carritoProductos.classList.add('hidden');
+            lista.innerHTML = '';
+            actualizarTotales();
+            return;
+        }
+
+        carritoVacio.classList.add('hidden');
+        carritoProductos.classList.remove('hidden');
+
+        lista.innerHTML = carrito.map((item, idx) => {
+            const precio = Number(item.precio ?? 0);
+            const cantidad = Number(item.cantidad ?? 1);
+            const totalLinea = precio * cantidad;
+            return `
+                <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <div class="text-sm font-semibold text-gray-900">${escapeHtml(item.nombre)}</div>
+                        <div class="text-xs text-gray-500">${escapeHtml(item.categoria || '')}</div>
+                        <div class="text-xs text-gray-500">Stock: ${escapeHtml(item.stock ?? '')} ${escapeHtml(item.medida || '')}</div>
+                    </div>
+                    <div class="text-right space-y-1">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-500">Cant.</label>
+                            <input type="number" min="1" class="input-modern w-20 text-right" value="${cantidad}"
+                                   onchange="actualizarCantidadCompra(${idx}, this.value)">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs text-gray-500">Precio</label>
+                            <input type="number" min="0" step="0.01" class="input-modern w-24 text-right" value="${precio.toFixed(2)}"
+                                   onchange="actualizarPrecioCompra(${idx}, this.value)">
+                        </div>
+                        <div class="text-xs text-gray-500">Linea: ${formatearMoneda ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
+                        <button type="button" class="btn-ghost px-2 py-1 text-red-700 text-xs"
+                                onclick="eliminarProductoCompra(${idx})">
+                            <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Quitar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (window.lucide) lucide.createIcons();
+        actualizarTotales();
+    }
+
+    function actualizarTotales() {
+        const subtotal = carrito.reduce((acc, item) => acc + Number(item.precio ?? 0) * Number(item.cantidad ?? 1), 0);
+        if (subtotalEl) subtotalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (detallesInput) detallesInput.value = JSON.stringify(carrito.map(item => ({
+            codProducto: item.codProducto,
+            cantidad: Number(item.cantidad ?? 1),
+            precioCompra: Number(item.precio ?? 0),
+            subtotal: Number(item.precio ?? 0) * Number(item.cantidad ?? 1)
+        })));
+        if (totalInput) totalInput.value = subtotal.toFixed(2);
+    }
+
+    function agregarProductoDesdeBusqueda(producto) {
+        if (!producto || !producto.codProducto) return;
+        const existente = carrito.find(p => Number(p.codProducto) === Number(producto.codProducto));
+        if (existente) {
+            existente.cantidad = Number(existente.cantidad ?? 1) + 1;
+        } else {
+            carrito.push({
+                codProducto: producto.codProducto,
+                nombre: producto.nombre || '',
+                categoria: producto.categoria_nombre || '',
+                medida: producto.medida_abrev || '',
+                precio: Number(producto.precio ?? 0),
+                cantidad: 1,
+                stock: producto.existencia ?? ''
+            });
+        }
+        renderCarrito();
+    }
+
+    function actualizarCantidadCompra(idx, valor) {
+        const cantidad = Math.max(1, Number(valor) || 1);
+        if (carrito[idx]) {
+            carrito[idx].cantidad = cantidad;
+            renderCarrito();
+        }
+    }
+
+    function actualizarPrecioCompra(idx, valor) {
+        const precio = Math.max(0, Number(valor) || 0);
+        if (carrito[idx]) {
+            carrito[idx].precio = precio;
+            renderCarrito();
+        }
+    }
+
+    function eliminarProductoCompra(idx) {
+        carrito.splice(idx, 1);
+        renderCarrito();
+    }
+
+    window.buscarProductos = buscarProductos;
+    window.manejarTeclado = manejarTeclado;
+    window.agregarProductoDesdeBusqueda = agregarProductoDesdeBusqueda;
+    window.actualizarCantidadCompra = actualizarCantidadCompra;
+    window.actualizarPrecioCompra = actualizarPrecioCompra;
+    window.eliminarProductoCompra = eliminarProductoCompra;
+
+    if (input) {
+        input.addEventListener('input', buscarProductos);
+        if (input.value.trim().length >= 2) {
+            buscarProductos();
+        } else {
+            mostrarMensajeInicial();
+        }
+    }
+
+    const form = document.getElementById('formCompra');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (carrito.length === 0) {
+                e.preventDefault();
+                alert('Agrega al menos un producto.');
+                return;
+            }
+            actualizarTotales();
+        });
+    }
+})();
+</script>

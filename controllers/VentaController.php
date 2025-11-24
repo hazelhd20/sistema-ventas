@@ -45,6 +45,23 @@ class VentaController {
         require_once 'views/layout/footer.php';
     }
 
+    public function search() {
+        $fechaDesde = $_GET['fechaDesde'] ?? date('Y-m-01');
+        $fechaHasta = $_GET['fechaHasta'] ?? date('Y-m-d');
+        $idCliente = $_GET['idCliente'] ?? '';
+        $search = trim($_GET['search'] ?? '');
+        $idUsuario = $_GET['idUsuario'] ?? '';
+        $idFormaPago = $_GET['idFormaPago'] ?? '';
+        $totalMin = $_GET['totalMin'] ?? '';
+        $totalMax = $_GET['totalMax'] ?? '';
+
+        $ventas = $this->ventaModel->searchAjax($fechaDesde, $fechaHasta, $idCliente, $search, $idUsuario, $idFormaPago, $totalMin, $totalMax);
+
+        header('Content-Type: application/json');
+        echo json_encode($ventas);
+        exit;
+    }
+
     public function nueva() {
         $formasPago = $this->conn->query("SELECT * FROM forma_pago WHERE estado = 1 ORDER BY nombre")->fetchAll();
         

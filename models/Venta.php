@@ -141,6 +141,11 @@ class Venta {
         return $stmt->fetchAll();
     }
 
+    public function searchAjax($fechaDesde = '', $fechaHasta = '', $idCliente = '', $search = '', $idUsuario = '', $idFormaPago = '', $totalMin = '', $totalMax = '') {
+        $resultados = $this->getAll($fechaDesde, $fechaHasta, $idCliente, $search, $idUsuario, $idFormaPago, $totalMin, $totalMax);
+        return array_slice($resultados, 0, 50);
+    }
+
     public function getById($id) {
         $query = "SELECT v.*, 
                          c.nombre as cliente_nombre, c.apellidos as cliente_apellidos, c.telefono as cliente_telefono,

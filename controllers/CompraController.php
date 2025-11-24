@@ -42,6 +42,21 @@ class CompraController {
         require_once 'views/layout/footer.php';
     }
 
+    public function search() {
+        $fechaDesde = $_GET['fechaDesde'] ?? date('Y-m-01');
+        $fechaHasta = $_GET['fechaHasta'] ?? date('Y-m-d');
+        $idProveedor = $_GET['idProveedor'] ?? '';
+        $search = trim($_GET['search'] ?? '');
+        $totalMin = $_GET['totalMin'] ?? '';
+        $totalMax = $_GET['totalMax'] ?? '';
+
+        $compras = $this->compraModel->searchAjax($fechaDesde, $fechaHasta, $idProveedor, $search, $totalMin, $totalMax);
+
+        header('Content-Type: application/json');
+        echo json_encode($compras);
+        exit;
+    }
+
     public function nueva() {
         $proveedores = $this->proveedorModel->getAll();
         

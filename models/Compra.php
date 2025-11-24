@@ -124,6 +124,11 @@ class Compra {
         return $stmt->fetchAll();
     }
 
+    public function searchAjax($fechaDesde = '', $fechaHasta = '', $idProveedor = '', $search = '', $totalMin = '', $totalMax = '') {
+        $resultados = $this->getAll($fechaDesde, $fechaHasta, $idProveedor, $search, $totalMin, $totalMax);
+        return array_slice($resultados, 0, 50);
+    }
+
     public function getById($id) {
         $query = "SELECT c.*, 
                          p.nombre as proveedor_nombre, p.contacto as proveedor_contacto, 
