@@ -32,17 +32,20 @@ class ProductoController {
 
     public function create() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->productoModel->nombre = $_POST['nombre'];
+            $this->productoModel->nombre = trim($_POST['nombre']);
             $this->productoModel->descripcion = $_POST['descripcion'] ?? '';
             $this->productoModel->idCategoria = $_POST['idCategoria'];
             $this->productoModel->idMedida = $_POST['idMedida'];
             $this->productoModel->precio = $_POST['precio'];
             $this->productoModel->existencia = $_POST['existencia'] ?? 0;
             $this->productoModel->stockMinimo = $_POST['stockMinimo'] ?? 10;
-            $this->productoModel->codigoBarras = $_POST['codigoBarras'] ?? '';
+            $codigoBarras = trim($_POST['codigoBarras'] ?? '');
+            $this->productoModel->codigoBarras = $codigoBarras === '' ? null : $codigoBarras;
             $this->productoModel->estado = 1;
             
-            if ($this->productoModel->create()) {
+            if ($this->codigoBarrasExiste($this->productoModel->codigoBarras)) {
+                $_SESSION['error'] = 'El código de barras ya está registrado';
+            } elseif ($this->productoModel->create()) {
                 $_SESSION['success'] = 'Producto creado exitosamente';
             } else {
                 $_SESSION['error'] = 'Error al crear el producto';
@@ -56,17 +59,20 @@ class ProductoController {
     public function update() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->productoModel->codProducto = $_POST['codProducto'];
-            $this->productoModel->nombre = $_POST['nombre'];
+            $this->productoModel->nombre = trim($_POST['nombre']);
             $this->productoModel->descripcion = $_POST['descripcion'] ?? '';
             $this->productoModel->idCategoria = $_POST['idCategoria'];
             $this->productoModel->idMedida = $_POST['idMedida'];
             $this->productoModel->precio = $_POST['precio'];
             $this->productoModel->existencia = $_POST['existencia'];
             $this->productoModel->stockMinimo = $_POST['stockMinimo'];
-            $this->productoModel->codigoBarras = $_POST['codigoBarras'] ?? '';
+            $codigoBarras = trim($_POST['codigoBarras'] ?? '');
+            $this->productoModel->codigoBarras = $codigoBarras === '' ? null : $codigoBarras;
             $this->productoModel->estado = $_POST['estado'];
             
-            if ($this->productoModel->update()) {
+            if ($this->codigoBarrasExiste($this->productoModel->codigoBarras, $this->productoModel->codProducto)) {
+                $_SESSION['error'] = 'El código de barras ya está registrado';
+            } elseif ($this->productoModel->update()) {
                 $_SESSION['success'] = 'Producto actualizado exitosamente';
             } else {
                 $_SESSION['error'] = 'Error al actualizar el producto';
@@ -93,6 +99,26 @@ class ProductoController {
         $productos = $this->productoModel->search($term);
         header('Content-Type: application/json');
         echo json_encode($productos);
+    }
+
+    private function codigoBarrasExiste($codigoBarras, $excluirId = null): bool {
+        if ($codigoBarras === null || $codigoBarras === '') {
+            return false;
+        }
+
+        $sql = "SELECT COUNT(*) AS total FROM productos WHERE codigoBarras = ?";
+        $params = [$codigoBarras];
+
+        if ($excluirId !== null) {
+            $sql .= " AND codProducto <> ?";
+            $params[] = $excluirId;
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
+        return isset($row['total']) ? (int) $row['total'] > 0 : false;
     }
 }
 ?>

@@ -30,15 +30,20 @@ class UsuarioController {
     public function create() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->usuarioModel->idRol = $_POST['idRol'];
-            $this->usuarioModel->nombre = $_POST['nombre'];
-            $this->usuarioModel->apellidos = $_POST['apellidos'];
-            $this->usuarioModel->usuario = $_POST['usuario'];
+            $this->usuarioModel->nombre = trim($_POST['nombre']);
+            $this->usuarioModel->apellidos = trim($_POST['apellidos']);
+            $this->usuarioModel->usuario = trim($_POST['usuario']);
             $this->usuarioModel->password = $_POST['password'];
-            $this->usuarioModel->email = $_POST['email'] ?? '';
-            $this->usuarioModel->telefono = $_POST['telefono'] ?? '';
+            $email = trim($_POST['email'] ?? '');
+            $this->usuarioModel->email = $email === '' ? null : $email;
+            $this->usuarioModel->telefono = trim($_POST['telefono'] ?? '');
             $this->usuarioModel->estado = 1;
             
-            if ($this->usuarioModel->create()) {
+            if ($this->usuarioExiste('usuario', $this->usuarioModel->usuario)) {
+                $_SESSION['error'] = 'El usuario ya existe';
+            } elseif ($this->usuarioExiste('email', $this->usuarioModel->email)) {
+                $_SESSION['error'] = 'El correo ya está registrado';
+            } elseif ($this->usuarioModel->create()) {
                 $_SESSION['success'] = 'Usuario creado exitosamente';
             } else {
                 $_SESSION['error'] = 'Error al crear el usuario';
@@ -53,29 +58,36 @@ class UsuarioController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->usuarioModel->idUsuario = $_POST['idUsuario'];
             $this->usuarioModel->idRol = $_POST['idRol'];
-            $this->usuarioModel->nombre = $_POST['nombre'];
-            $this->usuarioModel->apellidos = $_POST['apellidos'];
-            $this->usuarioModel->usuario = $_POST['usuario'];
-            $this->usuarioModel->email = $_POST['email'] ?? '';
-            $this->usuarioModel->telefono = $_POST['telefono'] ?? '';
+            $this->usuarioModel->nombre = trim($_POST['nombre']);
+            $this->usuarioModel->apellidos = trim($_POST['apellidos']);
+            $this->usuarioModel->usuario = trim($_POST['usuario']);
+            $email = trim($_POST['email'] ?? '');
+            $this->usuarioModel->email = $email === '' ? null : $email;
+            $this->usuarioModel->telefono = trim($_POST['telefono'] ?? '');
             $this->usuarioModel->estado = $_POST['estado'];
             
-            // Solo actualizar contraseña si se proporciona
-            if (!empty($_POST['password'])) {
-                $this->usuarioModel->password = $_POST['password'];
-                // Necesitamos actualizar la contraseña por separado
-                $query = "UPDATE usuarios SET password = :password WHERE idUsuario = :id";
-                $stmt = $this->conn->prepare($query);
-                $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
-                $stmt->bindParam(":password", $hashedPassword);
-                $stmt->bindParam(":id", $_POST['idUsuario']);
-                $stmt->execute();
-            }
-            
-            if ($this->usuarioModel->update()) {
-                $_SESSION['success'] = 'Usuario actualizado exitosamente';
+            if ($this->usuarioExiste('usuario', $this->usuarioModel->usuario, $this->usuarioModel->idUsuario)) {
+                $_SESSION['error'] = 'El usuario ya existe';
+            } elseif ($this->usuarioExiste('email', $this->usuarioModel->email, $this->usuarioModel->idUsuario)) {
+                $_SESSION['error'] = 'El correo ya está registrado';
             } else {
-                $_SESSION['error'] = 'Error al actualizar el usuario';
+                // Solo actualizar contraseña si se proporciona
+                if (!empty($_POST['password'])) {
+                    $this->usuarioModel->password = $_POST['password'];
+                    // Necesitamos actualizar la contraseña por separado
+                    $query = "UPDATE usuarios SET password = :password WHERE idUsuario = :id";
+                    $stmt = $this->conn->prepare($query);
+                    $hashedPassword = password_hash($_POST['password'], PASSWORD_DEFAULT);
+                    $stmt->bindParam(":password", $hashedPassword);
+                    $stmt->bindParam(":id", $_POST['idUsuario']);
+                    $stmt->execute();
+                }
+                
+                if ($this->usuarioModel->update()) {
+                    $_SESSION['success'] = 'Usuario actualizado exitosamente';
+                } else {
+                    $_SESSION['error'] = 'Error al actualizar el usuario';
+                }
             }
             
             header('Location: ' . BASE_URL . 'usuarios');
@@ -126,6 +138,30 @@ class UsuarioController {
 
         header('Location: ' . BASE_URL . 'usuarios');
         exit;
+    }
+
+    private function usuarioExiste(string $campo, $valor, $excluirId = null): bool {
+        $camposPermitidos = ['usuario', 'email'];
+        if (!in_array($campo, $camposPermitidos, true)) {
+            return false;
+        }
+        if ($valor === null || $valor === '') {
+            return false;
+        }
+
+        $sql = "SELECT COUNT(*) AS total FROM usuarios WHERE {$campo} = ?";
+        $params = [$valor];
+
+        if ($excluirId !== null) {
+            $sql .= " AND idUsuario <> ?";
+            $params[] = $excluirId;
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
+        return isset($row['total']) ? (int) $row['total'] > 0 : false;
     }
 }
 ?>

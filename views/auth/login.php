@@ -53,7 +53,7 @@ $usuario = e(old('usuario', ''));
                 </div>
             </div>
             <div class="space-y-4 text-gray-700 text-sm leading-relaxed">
-                <p>Controla ventas e inventario con una interfaz ligera inspirada en el sistema de inventarios.</p>
+                <p>Controla ventas e inventario con una interfaz ligera.</p>
                 <ul class="space-y-2">
                     <li class="flex items-start space-x-2">
                         <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5"></i>
