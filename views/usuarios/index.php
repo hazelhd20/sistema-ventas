@@ -68,21 +68,37 @@ $pageTitle = "Usuarios";
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <?php if ($usuario['estado'] == 1): ?>
-                                        <span class="pill bg-green-pastel/70 text-gray-800">Activo</span>
-                                    <?php else: ?>
-                                        <span class="pill bg-pink-pastel/70 text-gray-800">Inactivo</span>
-                                    <?php endif; ?>
+                                    <?php $usuarioActivo = (int)$usuario['estado'] === 1; ?>
+                                    <span
+                                        class="<?php echo $usuarioActivo ? 'pill bg-green-pastel/70 text-gray-800' : 'pill bg-pink-pastel/70 text-gray-800'; ?>"
+                                        data-estado-pill
+                                        data-state="<?php echo $usuarioActivo ? '1' : '0'; ?>"
+                                        data-class-activo="pill bg-green-pastel/70 text-gray-800"
+                                        data-class-inactivo="pill bg-pink-pastel/70 text-gray-800">
+                                        <?php echo $usuarioActivo ? 'Activo' : 'Inactivo'; ?>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
                                         <button onclick='abrirModal("editar", <?php echo json_encode($usuario); ?>)' class="btn-ghost px-3 py-2">
                                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                                         </button>
-                                        <form action="<?php echo BASE_URL; ?>usuarios/toggle" method="POST" onsubmit="return confirmarEliminacion('Seguro de cambiar estado?');">
+                                        <form action="<?php echo BASE_URL; ?>usuarios/toggle"
+                                              method="POST"
+                                              data-ajax-toggle
+                                              data-entity="usuario"
+                                              data-id="<?php echo $usuario['idUsuario']; ?>"
+                                              data-current-state="<?php echo $usuarioActivo ? '1' : '0'; ?>"
+                                              data-new-state="<?php echo $usuarioActivo ? '0' : '1'; ?>"
+                                              data-toggle-url="<?php echo BASE_URL; ?>usuarios/toggle"
+                                              data-url-activar="<?php echo BASE_URL; ?>usuarios/toggle"
+                                              data-url-desactivar="<?php echo BASE_URL; ?>usuarios/toggle"
+                                              data-confirm-activar="Desea activar este usuario?"
+                                              data-confirm-desactivar="Desea desactivar este usuario?">
                                             <input type="hidden" name="idUsuario" value="<?php echo $usuario['idUsuario']; ?>">
-                                            <button type="submit" class="btn-ghost px-3 py-2">
-                                                <i data-lucide="refresh-ccw" class="h-4 w-4 mr-1"></i> Cambiar estado
+                                            <button type="submit" class="btn-ghost px-3 py-2" data-ajax-toggle-trigger>
+                                                <i data-lucide="<?php echo $usuarioActivo ? 'ban' : 'check-circle'; ?>" class="h-4 w-4 mr-1"></i>
+                                                <span data-toggle-text><?php echo $usuarioActivo ? 'Desactivar' : 'Activar'; ?></span>
                                             </button>
                                         </form>
                                     </div>

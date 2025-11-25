@@ -23,11 +23,16 @@ $configDisabled = $configDisabled ?? false;
             </div>
             <div class="space-y-2">
                 <?php foreach ($categorias as $cat): ?>
-                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg" data-estado-scope>
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($cat['nombre']); ?></span>
                             <?php $categoriaActiva = (int)$cat['estado'] === 1; ?>
-                            <span class="pill ml-2 <?php echo $categoriaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                            <span
+                                class="pill ml-2 <?php echo $categoriaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>"
+                                data-estado-pill
+                                data-state="<?php echo $categoriaActiva ? '1' : '0'; ?>"
+                                data-class-activo="pill ml-2 bg-green-pastel/70 text-gray-800"
+                                data-class-inactivo="pill ml-2 bg-gray-200 text-gray-700">
                                 <?php echo $categoriaActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
@@ -37,18 +42,46 @@ $configDisabled = $configDisabled ?? false;
                                 <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$cat['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline" data-keep-scroll="true">
+                                <?php
+                                    $catUrlActivar = BASE_URL . 'configuracion/categoria';
+                                    $catUrlDesactivar = BASE_URL . 'configuracion/categoria';
+                                ?>
+                                <form method="POST"
+                                      action="<?php echo $catUrlDesactivar; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="categoria"
+                                      data-id="<?php echo $cat['idCategoria']; ?>"
+                                      data-current-state="1"
+                                      data-new-state="0"
+                                      data-toggle-url="<?php echo $catUrlDesactivar; ?>"
+                                      data-url-activar="<?php echo $catUrlActivar; ?>"
+                                      data-url-desactivar="<?php echo $catUrlDesactivar; ?>"
+                                      data-confirm-activar="Desea activar esta categoria?"
+                                      data-confirm-desactivar="Desea desactivar esta categoria?">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta categoria?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar categoria" title="Desactivar categoria">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar categoria" title="Desactivar categoria" data-ajax-toggle-trigger>
                                         <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline" data-keep-scroll="true">
+                                <form method="POST"
+                                      action="<?php echo $catUrlActivar; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="categoria"
+                                      data-id="<?php echo $cat['idCategoria']; ?>"
+                                      data-current-state="0"
+                                      data-new-state="1"
+                                      data-toggle-url="<?php echo $catUrlActivar; ?>"
+                                      data-url-activar="<?php echo $catUrlActivar; ?>"
+                                      data-url-desactivar="<?php echo $catUrlActivar; ?>"
+                                      data-confirm-activar="Desea activar esta categoria?"
+                                      data-confirm-desactivar="Desea desactivar esta categoria?">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar categoria" title="Activar categoria">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar categoria" title="Activar categoria" data-ajax-toggle-trigger>
                                         <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>
@@ -69,11 +102,16 @@ $configDisabled = $configDisabled ?? false;
             </div>
             <div class="space-y-2">
                 <?php foreach ($medidas as $med): ?>
-                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg" data-estado-scope>
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></span>
                             <?php $medidaActiva = (int)$med['estado'] === 1; ?>
-                            <span class="pill ml-2 <?php echo $medidaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                            <span
+                                class="pill ml-2 <?php echo $medidaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>"
+                                data-estado-pill
+                                data-state="<?php echo $medidaActiva ? '1' : '0'; ?>"
+                                data-class-activo="pill ml-2 bg-green-pastel/70 text-gray-800"
+                                data-class-inactivo="pill ml-2 bg-gray-200 text-gray-700">
                                 <?php echo $medidaActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
@@ -83,18 +121,45 @@ $configDisabled = $configDisabled ?? false;
                                 <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$med['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline" data-keep-scroll="true">
+                                <?php
+                                    $medUrl = BASE_URL . 'configuracion/medida';
+                                ?>
+                                <form method="POST"
+                                      action="<?php echo $medUrl; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="medida"
+                                      data-id="<?php echo $med['idMedida']; ?>"
+                                      data-current-state="1"
+                                      data-new-state="0"
+                                      data-toggle-url="<?php echo $medUrl; ?>"
+                                      data-url-activar="<?php echo $medUrl; ?>"
+                                      data-url-desactivar="<?php echo $medUrl; ?>"
+                                      data-confirm-activar="Desea activar esta medida?"
+                                      data-confirm-desactivar="Desea desactivar esta medida?">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta medida?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar medida" title="Desactivar medida">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar medida" title="Desactivar medida" data-ajax-toggle-trigger>
                                         <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline" data-keep-scroll="true">
+                                <form method="POST"
+                                      action="<?php echo $medUrl; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="medida"
+                                      data-id="<?php echo $med['idMedida']; ?>"
+                                      data-current-state="0"
+                                      data-new-state="1"
+                                      data-toggle-url="<?php echo $medUrl; ?>"
+                                      data-url-activar="<?php echo $medUrl; ?>"
+                                      data-url-desactivar="<?php echo $medUrl; ?>"
+                                      data-confirm-activar="Desea activar esta medida?"
+                                      data-confirm-desactivar="Desea desactivar esta medida?">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar medida" title="Activar medida">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar medida" title="Activar medida" data-ajax-toggle-trigger>
                                         <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>
@@ -115,11 +180,16 @@ $configDisabled = $configDisabled ?? false;
             </div>
             <div class="space-y-2">
                 <?php foreach ($formasPago as $fp): ?>
-                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+                    <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg" data-estado-scope>
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($fp['nombre']); ?></span>
                             <?php $formaPagoActiva = (int)$fp['estado'] === 1; ?>
-                            <span class="pill ml-2 <?php echo $formaPagoActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                            <span
+                                class="pill ml-2 <?php echo $formaPagoActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>"
+                                data-estado-pill
+                                data-state="<?php echo $formaPagoActiva ? '1' : '0'; ?>"
+                                data-class-activo="pill ml-2 bg-green-pastel/70 text-gray-800"
+                                data-class-inactivo="pill ml-2 bg-gray-200 text-gray-700">
                                 <?php echo $formaPagoActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
@@ -129,18 +199,45 @@ $configDisabled = $configDisabled ?? false;
                                 <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$fp['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline" data-keep-scroll="true">
+                                <?php
+                                    $fpUrl = BASE_URL . 'configuracion/formaPago';
+                                ?>
+                                <form method="POST"
+                                      action="<?php echo $fpUrl; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="formaPago"
+                                      data-id="<?php echo $fp['idFormaPago']; ?>"
+                                      data-current-state="1"
+                                      data-new-state="0"
+                                      data-toggle-url="<?php echo $fpUrl; ?>"
+                                      data-url-activar="<?php echo $fpUrl; ?>"
+                                      data-url-desactivar="<?php echo $fpUrl; ?>"
+                                      data-confirm-activar="Desea activar esta forma de pago?"
+                                      data-confirm-desactivar="Desea desactivar esta forma de pago?">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta forma de pago?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar forma de pago" title="Desactivar forma de pago">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar forma de pago" title="Desactivar forma de pago" data-ajax-toggle-trigger>
                                         <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline" data-keep-scroll="true">
+                                <form method="POST"
+                                      action="<?php echo $fpUrl; ?>"
+                                      class="inline"
+                                      data-ajax-toggle
+                                      data-entity="formaPago"
+                                      data-id="<?php echo $fp['idFormaPago']; ?>"
+                                      data-current-state="0"
+                                      data-new-state="1"
+                                      data-toggle-url="<?php echo $fpUrl; ?>"
+                                      data-url-activar="<?php echo $fpUrl; ?>"
+                                      data-url-desactivar="<?php echo $fpUrl; ?>"
+                                      data-confirm-activar="Desea activar esta forma de pago?"
+                                      data-confirm-desactivar="Desea desactivar esta forma de pago?">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar forma de pago" title="Activar forma de pago">
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar forma de pago" title="Activar forma de pago" data-ajax-toggle-trigger>
                                         <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>

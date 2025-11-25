@@ -94,11 +94,15 @@ $pageTitle = "Productos";
                                     <span class="text-xs"><?php echo $producto['stockMinimo']; ?> <?php echo $producto['medida_abrev']; ?></span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <?php if ((int)($producto['estado'] ?? 0) === 1): ?>
-                                        <span class="pill bg-green-pastel/70 text-gray-800">Activo</span>
-                                    <?php else: ?>
-                                        <span class="pill bg-gray-200 text-gray-700">Inactivo</span>
-                                    <?php endif; ?>
+                                    <?php $productoActivo = (int)($producto['estado'] ?? 0) === 1; ?>
+                                    <span
+                                        class="<?php echo $productoActivo ? 'pill bg-green-pastel/70 text-gray-800' : 'pill bg-gray-200 text-gray-700'; ?>"
+                                        data-estado-pill
+                                        data-state="<?php echo $productoActivo ? '1' : '0'; ?>"
+                                        data-class-activo="pill bg-green-pastel/70 text-gray-800"
+                                        data-class-inactivo="pill bg-gray-200 text-gray-700">
+                                        <?php echo $productoActivo ? 'Activo' : 'Inactivo'; ?>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
@@ -106,19 +110,25 @@ $pageTitle = "Productos";
                                                 class="btn-ghost px-3 py-2">
                                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                                         </button>
-                        <?php if ((int)($producto['estado'] ?? 0) === 1): ?>
-                            <a href="<?php echo BASE_URL; ?>productos/delete/<?php echo $producto['codProducto']; ?>"
-                               onclick="return confirmarEliminacion('Desea desactivar este producto?')"
-                               class="btn-ghost px-3 py-2 text-red-700">
-                                <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
-                            </a>
-                        <?php else: ?>
-                            <a href="<?php echo BASE_URL; ?>productos/activate/<?php echo $producto['codProducto']; ?>"
-                               onclick="return confirmarEliminacion('Desea activar este producto?')"
-                               class="btn-ghost px-3 py-2 text-green-700">
-                                <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
-                            </a>
-                        <?php endif; ?>
+                        <?php
+                            $prodUrlActivar = BASE_URL . 'productos/activate/' . $producto['codProducto'];
+                            $prodUrlDesactivar = BASE_URL . 'productos/delete/' . $producto['codProducto'];
+                        ?>
+                        <a href="<?php echo $productoActivo ? $prodUrlDesactivar : $prodUrlActivar; ?>"
+                           class="btn-ghost px-3 py-2 <?php echo $productoActivo ? 'text-red-700' : 'text-green-700'; ?>"
+                           data-ajax-toggle
+                           data-entity="producto"
+                           data-id="<?php echo $producto['codProducto']; ?>"
+                           data-current-state="<?php echo $productoActivo ? '1' : '0'; ?>"
+                           data-new-state="<?php echo $productoActivo ? '0' : '1'; ?>"
+                           data-toggle-url="<?php echo $productoActivo ? $prodUrlDesactivar : $prodUrlActivar; ?>"
+                           data-url-activar="<?php echo $prodUrlActivar; ?>"
+                           data-url-desactivar="<?php echo $prodUrlDesactivar; ?>"
+                           data-confirm-activar="Desea activar este producto?"
+                           data-confirm-desactivar="Desea desactivar este producto?">
+                            <i data-lucide="<?php echo $productoActivo ? 'ban' : 'check-circle'; ?>" class="h-4 w-4 mr-1"></i>
+                            <span data-toggle-text><?php echo $productoActivo ? 'Desactivar' : 'Activar'; ?></span>
+                        </a>
                     </div>
                 </td>
             </tr>
@@ -191,7 +201,10 @@ $pageTitle = "Productos";
             : `$${Number(p.precioVenta ?? 0).toFixed(2)}`;
         const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
         const estadoLabel = Number(p.estado) === 1 ? 'Activo' : 'Inactivo';
-        const estadoClass = Number(p.estado) === 1 ? 'text-green-700' : 'text-gray-500';
+        const estadoClass = Number(p.estado) === 1 ? 'pill bg-green-pastel/70 text-gray-800' : 'pill bg-gray-200 text-gray-700';
+        const isActive = Number(p.estado) === 1;
+        const urlActivar = `${baseUrl}productos/activate/${encodeURIComponent(p.codProducto)}`;
+        const urlDesactivar = `${baseUrl}productos/delete/${encodeURIComponent(p.codProducto)}`;
 
         return `
             <tr class="hover:bg-blue-50 transition-colors">
@@ -222,8 +235,14 @@ $pageTitle = "Productos";
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <span class="text-xs">${escapeHtml(stockMin)} ${escapeHtml(p.medida_abrev)}</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${estadoClass}">
-                    ${estadoLabel}
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span class="${estadoClass}"
+                          data-estado-pill
+                          data-state="${isActive ? '1' : '0'}"
+                          data-class-activo="pill bg-green-pastel/70 text-gray-800"
+                          data-class-inactivo="pill bg-gray-200 text-gray-700">
+                        ${estadoLabel}
+                    </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center gap-2">
@@ -231,18 +250,21 @@ $pageTitle = "Productos";
                                 class="btn-ghost px-3 py-2">
                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                         </button>
-                        ${Number(p.estado) === 1
-                            ? `<a href="${baseUrl}productos/delete/${encodeURIComponent(p.codProducto)}"
-                                   onclick="return confirmarEliminacion('Desea desactivar este producto?')"
-                                   class="btn-ghost px-3 py-2 text-red-700">
-                                    <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
-                               </a>`
-                            : `<a href="${baseUrl}productos/activate/${encodeURIComponent(p.codProducto)}"
-                                   onclick="return confirmarEliminacion('Desea activar este producto?')"
-                                   class="btn-ghost px-3 py-2 text-green-700">
-                                    <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
-                               </a>`
-                        }
+                        <a href="${isActive ? urlDesactivar : urlActivar}"
+                           class="btn-ghost px-3 py-2 ${isActive ? 'text-red-700' : 'text-green-700'}"
+                           data-ajax-toggle
+                           data-entity="producto"
+                           data-id="${escapeHtml(p.codProducto)}"
+                           data-current-state="${isActive ? '1' : '0'}"
+                           data-new-state="${isActive ? '0' : '1'}"
+                           data-toggle-url="${isActive ? urlDesactivar : urlActivar}"
+                           data-url-activar="${urlActivar}"
+                           data-url-desactivar="${urlDesactivar}"
+                           data-confirm-activar="Desea activar este producto?"
+                           data-confirm-desactivar="Desea desactivar este producto?">
+                            <i data-lucide="${isActive ? 'ban' : 'check-circle'}" class="h-4 w-4 mr-1"></i>
+                            <span data-toggle-text>${isActive ? 'Desactivar' : 'Activar'}</span>
+                        </a>
                     </div>
                 </td>
             </tr>

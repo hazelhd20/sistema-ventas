@@ -95,30 +95,40 @@ $pageTitle = "Proveedores";
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                    <?php if ((int)($proveedor['estado'] ?? 0) === 1): ?>
-                                        <span class="pill bg-green-pastel/70 text-gray-800">Activo</span>
-                                    <?php else: ?>
-                                        <span class="pill bg-gray-200 text-gray-700">Inactivo</span>
-                                    <?php endif; ?>
+                                    <?php $proveedorActivo = (int)($proveedor['estado'] ?? 0) === 1; ?>
+                                    <span
+                                        class="<?php echo $proveedorActivo ? 'pill bg-green-pastel/70 text-gray-800' : 'pill bg-gray-200 text-gray-700'; ?>"
+                                        data-estado-pill
+                                        data-state="<?php echo $proveedorActivo ? '1' : '0'; ?>"
+                                        data-class-activo="pill bg-green-pastel/70 text-gray-800"
+                                        data-class-inactivo="pill bg-gray-200 text-gray-700">
+                                        <?php echo $proveedorActivo ? 'Activo' : 'Inactivo'; ?>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
                                         <button onclick='abrirModal("editar", <?php echo json_encode($proveedor); ?>)' class="btn-ghost px-3 py-2">
                                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                                         </button>
-                                        <?php if ((int)($proveedor['estado'] ?? 0) === 1): ?>
-                                            <a href="<?php echo BASE_URL; ?>proveedores/delete/<?php echo $proveedor['idProveedor']; ?>"
-                                               class="btn-ghost px-3 py-2 text-red-700"
-                                               onclick="return confirmarEliminacion('Desea desactivar este proveedor?');">
-                                                <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
-                                            </a>
-                                        <?php else: ?>
-                                            <a href="<?php echo BASE_URL; ?>proveedores/activate/<?php echo $proveedor['idProveedor']; ?>"
-                                               class="btn-ghost px-3 py-2 text-green-700"
-                                               onclick="return confirmarEliminacion('Desea activar este proveedor?');">
-                                                <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
-                                            </a>
-                                        <?php endif; ?>
+                                        <?php
+                                            $provUrlActivar = BASE_URL . 'proveedores/activate/' . $proveedor['idProveedor'];
+                                            $provUrlDesactivar = BASE_URL . 'proveedores/delete/' . $proveedor['idProveedor'];
+                                        ?>
+                                        <a href="<?php echo $proveedorActivo ? $provUrlDesactivar : $provUrlActivar; ?>"
+                                           class="btn-ghost px-3 py-2 <?php echo $proveedorActivo ? 'text-red-700' : 'text-green-700'; ?>"
+                                           data-ajax-toggle
+                                           data-entity="proveedor"
+                                           data-id="<?php echo $proveedor['idProveedor']; ?>"
+                                           data-current-state="<?php echo $proveedorActivo ? '1' : '0'; ?>"
+                                           data-new-state="<?php echo $proveedorActivo ? '0' : '1'; ?>"
+                                           data-toggle-url="<?php echo $proveedorActivo ? $provUrlDesactivar : $provUrlActivar; ?>"
+                                           data-url-activar="<?php echo $provUrlActivar; ?>"
+                                           data-url-desactivar="<?php echo $provUrlDesactivar; ?>"
+                                           data-confirm-activar="Desea activar este proveedor?"
+                                           data-confirm-desactivar="Desea desactivar este proveedor?">
+                                            <i data-lucide="<?php echo $proveedorActivo ? 'ban' : 'check-circle'; ?>" class="h-4 w-4 mr-1"></i>
+                                            <span data-toggle-text><?php echo $proveedorActivo ? 'Desactivar' : 'Activar'; ?></span>
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -186,7 +196,10 @@ $pageTitle = "Proveedores";
             : '<span class="text-gray-400">-</span>';
         const proveedorJson = JSON.stringify(p).replace(/"/g, '&quot;');
         const estadoLabel = Number(p.estado) === 1 ? 'Activo' : 'Inactivo';
-        const estadoClass = Number(p.estado) === 1 ? 'text-green-700' : 'text-gray-500';
+        const estadoClass = Number(p.estado) === 1 ? 'pill bg-green-pastel/70 text-gray-800' : 'pill bg-gray-200 text-gray-700';
+        const isActive = Number(p.estado) === 1;
+        const urlActivar = `${baseUrl}proveedores/activate/${encodeURIComponent(p.idProveedor)}`;
+        const urlDesactivar = `${baseUrl}proveedores/delete/${encodeURIComponent(p.idProveedor)}`;
 
         return `
             <tr class="hover:bg-blue-50 transition-colors">
@@ -211,25 +224,35 @@ $pageTitle = "Proveedores";
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     ${email}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${estadoClass}">
-                    ${estadoLabel}
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <span class="${estadoClass}"
+                          data-estado-pill
+                          data-state="${isActive ? '1' : '0'}"
+                          data-class-activo="pill bg-green-pastel/70 text-gray-800"
+                          data-class-inactivo="pill bg-gray-200 text-gray-700">
+                        ${estadoLabel}
+                    </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div class="flex items-center gap-2">
                         <button onclick='abrirModal("editar", ${proveedorJson})' class="btn-ghost px-3 py-2">
                             <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
                         </button>
-                        ${Number(p.estado) === 1
-                            ? `<a href="${baseUrl}proveedores/delete/${encodeURIComponent(p.idProveedor)}"
-                                   class="btn-ghost px-3 py-2 text-red-700"
-                                   onclick="return confirmarEliminacion('Desea desactivar este proveedor?');">
-                                    <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
-                               </a>`
-                            : `<a href="${baseUrl}proveedores/activate/${encodeURIComponent(p.idProveedor)}"
-                                   class="btn-ghost px-3 py-2 text-green-700"
-                                   onclick="return confirmarEliminacion('Desea activar este proveedor?');">
-                                    <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
-                               </a>`}
+                        <a href="${isActive ? urlDesactivar : urlActivar}"
+                           class="btn-ghost px-3 py-2 ${isActive ? 'text-red-700' : 'text-green-700'}"
+                           data-ajax-toggle
+                           data-entity="proveedor"
+                           data-id="${escapeHtml(p.idProveedor)}"
+                           data-current-state="${isActive ? '1' : '0'}"
+                           data-new-state="${isActive ? '0' : '1'}"
+                           data-toggle-url="${isActive ? urlDesactivar : urlActivar}"
+                           data-url-activar="${urlActivar}"
+                           data-url-desactivar="${urlDesactivar}"
+                           data-confirm-activar="Desea activar este proveedor?"
+                           data-confirm-desactivar="Desea desactivar este proveedor?">
+                            <i data-lucide="${isActive ? 'ban' : 'check-circle'}" class="h-4 w-4 mr-1"></i>
+                            <span data-toggle-text>${isActive ? 'Desactivar' : 'Activar'}</span>
+                        </a>
                     </div>
                 </td>
             </tr>
