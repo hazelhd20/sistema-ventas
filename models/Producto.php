@@ -10,7 +10,8 @@ class Producto {
     public $descripcion;
     public $idCategoria;
     public $idMedida;
-    public $precio;
+    public $precioCompra;
+    public $precioVenta;
     public $existencia;
     public $stockMinimo;
     public $codigoBarras;
@@ -87,8 +88,8 @@ class Producto {
 
     public function create() {
         $query = "INSERT INTO " . $this->table . " 
-                  (nombre, descripcion, idCategoria, idMedida, precio, existencia, stockMinimo, codigoBarras, estado) 
-                  VALUES (:nombre, :descripcion, :idCategoria, :idMedida, :precio, :existencia, :stockMinimo, :codigoBarras, :estado)";
+                  (nombre, descripcion, idCategoria, idMedida, precioCompra, precioVenta, existencia, stockMinimo, codigoBarras, estado) 
+                  VALUES (:nombre, :descripcion, :idCategoria, :idMedida, :precioCompra, :precioVenta, :existencia, :stockMinimo, :codigoBarras, :estado)";
         
         $stmt = $this->conn->prepare($query);
         
@@ -96,7 +97,8 @@ class Producto {
         $stmt->bindParam(":descripcion", $this->descripcion);
         $stmt->bindParam(":idCategoria", $this->idCategoria);
         $stmt->bindParam(":idMedida", $this->idMedida);
-        $stmt->bindParam(":precio", $this->precio);
+        $stmt->bindParam(":precioCompra", $this->precioCompra);
+        $stmt->bindParam(":precioVenta", $this->precioVenta);
         $stmt->bindParam(":existencia", $this->existencia);
         $stmt->bindParam(":stockMinimo", $this->stockMinimo);
         $stmt->bindParam(":codigoBarras", $this->codigoBarras);
@@ -112,7 +114,7 @@ class Producto {
     public function update() {
         $query = "UPDATE " . $this->table . " 
                   SET nombre = :nombre, descripcion = :descripcion, idCategoria = :idCategoria, 
-                      idMedida = :idMedida, precio = :precio, existencia = :existencia, 
+                      idMedida = :idMedida, precioCompra = :precioCompra, precioVenta = :precioVenta, existencia = :existencia, 
                       stockMinimo = :stockMinimo, codigoBarras = :codigoBarras, estado = :estado 
                   WHERE codProducto = :codProducto";
         
@@ -122,7 +124,8 @@ class Producto {
         $stmt->bindParam(":descripcion", $this->descripcion);
         $stmt->bindParam(":idCategoria", $this->idCategoria);
         $stmt->bindParam(":idMedida", $this->idMedida);
-        $stmt->bindParam(":precio", $this->precio);
+        $stmt->bindParam(":precioCompra", $this->precioCompra);
+        $stmt->bindParam(":precioVenta", $this->precioVenta);
         $stmt->bindParam(":existencia", $this->existencia);
         $stmt->bindParam(":stockMinimo", $this->stockMinimo);
         $stmt->bindParam(":codigoBarras", $this->codigoBarras);

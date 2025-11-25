@@ -36,9 +36,18 @@ class ProductoController {
             $this->productoModel->descripcion = $_POST['descripcion'] ?? '';
             $this->productoModel->idCategoria = $_POST['idCategoria'];
             $this->productoModel->idMedida = $_POST['idMedida'];
-            $this->productoModel->precio = $_POST['precio'];
-            $this->productoModel->existencia = $_POST['existencia'] ?? 0;
-            $this->productoModel->stockMinimo = $_POST['stockMinimo'] ?? 10;
+            $precioCompra = $_POST['precioCompra'] ?? null;
+            $precioVenta = $_POST['precioVenta'] ?? null;
+            $errorPrecio = $this->validarPreciosProducto($precioCompra, $precioVenta);
+            if ($errorPrecio) {
+                $_SESSION['error'] = $errorPrecio;
+                header('Location: ' . BASE_URL . 'productos');
+                exit;
+            }
+            $this->productoModel->precioCompra = (float) $precioCompra;
+            $this->productoModel->precioVenta = (float) $precioVenta;
+            $this->productoModel->existencia = isset($_POST['existencia']) ? max(0, (int) $_POST['existencia']) : 0;
+            $this->productoModel->stockMinimo = isset($_POST['stockMinimo']) ? max(0, (int) $_POST['stockMinimo']) : 10;
             $codigoBarras = trim($_POST['codigoBarras'] ?? '');
             $this->productoModel->codigoBarras = $codigoBarras === '' ? null : $codigoBarras;
             $this->productoModel->estado = 1;
@@ -63,9 +72,18 @@ class ProductoController {
             $this->productoModel->descripcion = $_POST['descripcion'] ?? '';
             $this->productoModel->idCategoria = $_POST['idCategoria'];
             $this->productoModel->idMedida = $_POST['idMedida'];
-            $this->productoModel->precio = $_POST['precio'];
-            $this->productoModel->existencia = $_POST['existencia'];
-            $this->productoModel->stockMinimo = $_POST['stockMinimo'];
+            $precioCompra = $_POST['precioCompra'] ?? null;
+            $precioVenta = $_POST['precioVenta'] ?? null;
+            $errorPrecio = $this->validarPreciosProducto($precioCompra, $precioVenta);
+            if ($errorPrecio) {
+                $_SESSION['error'] = $errorPrecio;
+                header('Location: ' . BASE_URL . 'productos');
+                exit;
+            }
+            $this->productoModel->precioCompra = (float) $precioCompra;
+            $this->productoModel->precioVenta = (float) $precioVenta;
+            $this->productoModel->existencia = isset($_POST['existencia']) ? max(0, (int) $_POST['existencia']) : 0;
+            $this->productoModel->stockMinimo = isset($_POST['stockMinimo']) ? max(0, (int) $_POST['stockMinimo']) : 0;
             $codigoBarras = trim($_POST['codigoBarras'] ?? '');
             $this->productoModel->codigoBarras = $codigoBarras === '' ? null : $codigoBarras;
             // Si no se envia estado desde el formulario, mantener activo por defecto
@@ -112,6 +130,19 @@ class ProductoController {
         $productos = $this->productoModel->search($term, $soloActivos);
         header('Content-Type: application/json');
         echo json_encode($productos);
+    }
+
+    private function validarPreciosProducto($precioCompra, $precioVenta): ?string {
+        if (!is_numeric($precioCompra) || (float) $precioCompra < 0) {
+            return 'El precio de compra debe ser un numero mayor o igual a 0';
+        }
+        if (!is_numeric($precioVenta) || (float) $precioVenta < 0) {
+            return 'El precio de venta debe ser un numero mayor o igual a 0';
+        }
+        if ((float) $precioVenta < (float) $precioCompra) {
+            return 'El precio de venta no puede ser menor al precio de compra';
+        }
+        return null;
     }
 
     private function codigoBarrasExiste($codigoBarras, $excluirId = null): bool {

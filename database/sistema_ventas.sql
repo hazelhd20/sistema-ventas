@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS productos (
     descripcion TEXT,
     idCategoria INT NOT NULL,
     idMedida INT NOT NULL,
-    precio DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    precioCompra DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    precioVenta DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     existencia INT NOT NULL DEFAULT 0,
     stockMinimo INT DEFAULT 10,
     codigoBarras VARCHAR(50) UNIQUE,
@@ -203,7 +204,7 @@ FOR EACH ROW
 BEGIN
     UPDATE productos 
     SET existencia = existencia + NEW.cantidad,
-        precio = NEW.precioCompra,
+        precioCompra = NEW.precioCompra,
         updated_at = CURRENT_TIMESTAMP
     WHERE codProducto = NEW.codProducto;
 END//
@@ -264,12 +265,12 @@ INSERT INTO forma_pago (nombre, descripcion) VALUES
 ('Cheque', 'Pago con cheque');
 
 -- Productos de ejemplo
-INSERT INTO productos (nombre, descripcion, idCategoria, idMedida, precio, existencia, stockMinimo, codigoBarras) VALUES
-('Arroz 1kg', 'Arroz blanco marca popular', 1, 1, 25.50, 50, 10, '7501234567890'),
-('Frijol 1kg', 'Frijol negro', 1, 1, 35.00, 30, 10, '7501234567891'),
-('Aceite 1L', 'Aceite vegetal', 1, 3, 45.00, 40, 15, '7501234567892'),
-('Leche 1L', 'Leche entera', 2, 3, 22.00, 60, 20, '7501234567893'),
-('Huevo cartón', 'Huevo blanco 12 piezas', 2, 1, 45.00, 25, 10, '7501234567894');
+INSERT INTO productos (nombre, descripcion, idCategoria, idMedida, precioCompra, precioVenta, existencia, stockMinimo, codigoBarras) VALUES
+('Arroz 1kg', 'Arroz blanco marca popular', 1, 1, 20.50, 25.50, 50, 10, '7501234567890'),
+('Frijol 1kg', 'Frijol negro', 1, 1, 28.00, 35.00, 30, 10, '7501234567891'),
+('Aceite 1L', 'Aceite vegetal', 1, 3, 38.00, 45.00, 40, 15, '7501234567892'),
+('Leche 1L', 'Leche entera', 2, 3, 18.00, 22.00, 60, 20, '7501234567893'),
+('Huevo carton', 'Huevo blanco 12 piezas', 2, 1, 38.00, 45.00, 25, 10, '7501234567894');
 
 -- Cliente genérico (público en general)
 INSERT INTO clientes (nombre, apellidos) VALUES
@@ -278,4 +279,3 @@ INSERT INTO clientes (nombre, apellidos) VALUES
 -- Proveedor de ejemplo
 INSERT INTO proveedores (nombre, contacto, telefono, email) VALUES
 ('Distribuidora Yucatán', 'Juan Pérez', '9991234567', 'contacto@distribuidora.com');
-

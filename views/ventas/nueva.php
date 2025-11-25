@@ -201,13 +201,19 @@ $oldObservaciones = old('observaciones', '');
     function renderProducto(p) {
         const disponible = Number(p.existencia ?? 0);
         const medida = escapeHtml(p.medida_abrev ?? '');
-        const precio = (typeof formatearMoneda === 'function')
-            ? formatearMoneda(Number(p.precio ?? 0))
-            : `$${Number(p.precio ?? 0).toFixed(2)}`;
+        const venta = Number(p.precioVenta ?? p.precio ?? 0);
+        const costo = Number(p.precioCompra ?? p.precio ?? 0);
+        const precioVenta = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(venta)
+            : `$${venta.toFixed(2)}`;
+        const precioCompra = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(costo)
+            : `$${costo.toFixed(2)}`;
         const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
         const stockInfo = `${disponible} ${medida}`;
         const categoria = escapeHtml(p.categoria_nombre ?? '');
         const codigo = p.codigoBarras ? `<span class="text-xs text-gray-500 block">Codigo: ${escapeHtml(p.codigoBarras)}</span>` : '';
+        const costoInfo = costo > 0 ? `<div class="text-xs text-gray-500">Costo: ${precioCompra}</div>` : '';
 
         return `
             <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between hover:border-blue-200 hover:bg-blue-50 transition">
@@ -221,7 +227,8 @@ $oldObservaciones = old('observaciones', '');
                     <div class="text-xs text-gray-500 mt-1">Stock: ${escapeHtml(stockInfo)}</div>
                 </div>
                 <div class="text-right space-y-2">
-                    <div class="text-sm font-bold text-blue-600">${precio}</div>
+                    <div class="text-sm font-bold text-blue-600">${precioVenta}</div>
+                    ${costoInfo}
                     <button type="button" class="btn-primary px-3 py-1 text-sm"
                             onclick="agregarProductoDesdeBusqueda(${productoJson})">
                         <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Agregar
@@ -310,7 +317,7 @@ $oldObservaciones = old('observaciones', '');
         carritoProductos.classList.remove('hidden');
 
         lista.innerHTML = carrito.map((item, idx) => {
-            const precio = Number(item.precio ?? 0);
+            const precio = Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0);
             const cantidad = Number(item.cantidad ?? 1);
             const totalLinea = precio * cantidad;
             return `
@@ -342,14 +349,14 @@ $oldObservaciones = old('observaciones', '');
     }
 
     function actualizarTotales() {
-        const subtotal = carrito.reduce((acc, item) => acc + Number(item.precio ?? 0) * Number(item.cantidad ?? 1), 0);
+        const subtotal = carrito.reduce((acc, item) => acc + Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0) * Number(item.cantidad ?? 1), 0);
         if (subtotalEl) subtotalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
         if (totalEl) totalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
         if (detallesInput) detallesInput.value = JSON.stringify(carrito.map(item => ({
             codProducto: item.codProducto,
             cantidad: Number(item.cantidad ?? 1),
-            precio: Number(item.precio ?? 0),
-            subtotal: Number(item.precio ?? 0) * Number(item.cantidad ?? 1),
+            precio: Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0),
+            subtotal: Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0) * Number(item.cantidad ?? 1),
             nombre: item.nombre || '',
             categoria: item.categoria || '',
             medida: item.medida || '',
@@ -370,7 +377,7 @@ $oldObservaciones = old('observaciones', '');
                 nombre: producto.nombre || '',
                 categoria: producto.categoria_nombre || '',
                 medida: producto.medida_abrev || '',
-                precio: Number(producto.precio ?? 0),
+                precio: Number(producto.precioVenta ?? producto.precio ?? producto.precioCompra ?? 0),
                 cantidad: 1,
                 stock: producto.existencia ?? ''
             });
@@ -524,7 +531,7 @@ $oldObservaciones = old('observaciones', '');
                 nombre: item.nombre || '',
                 categoria: item.categoria || '',
                 medida: item.medida || '',
-                precio: Number(item.precio ?? item.precioCompra ?? 0),
+                precio: Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0),
                 cantidad: Number(item.cantidad ?? 1),
                 stock: item.stock ?? ''
             }));
@@ -553,7 +560,7 @@ $oldObservaciones = old('observaciones', '');
                 nombre: item.nombre || '',
                 categoria: item.categoria || '',
                 medida: item.medida || '',
-                precio: Number(item.precio ?? item.precioCompra ?? 0),
+                precio: Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0),
                 cantidad: Number(item.cantidad ?? 1),
                 stock: item.stock ?? ''
             }));

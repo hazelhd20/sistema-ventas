@@ -38,7 +38,8 @@ $pageTitle = "Productos";
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Codigo</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
-                        <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                        <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio compra</th>
+                        <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio venta</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Existencia</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Min.</th>
                         <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
@@ -48,7 +49,7 @@ $pageTitle = "Productos";
                 <tbody class="bg-white divide-y divide-gray-200" id="productosTbody">
                     <?php if (empty($productos)): ?>
                         <tr>
-                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                                 <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
                                 <p>No hay productos registrados</p>
                             </td>
@@ -79,7 +80,10 @@ $pageTitle = "Productos";
                                     <?php echo htmlspecialchars($producto['categoria_nombre']); ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="text-sm font-bold text-blue-600">$<?php echo number_format($producto['precio'], 2); ?></span>
+                                    <span class="text-sm font-bold text-gray-800">$<?php echo number_format($producto['precioCompra'], 2); ?></span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="text-sm font-bold text-blue-600">$<?php echo number_format($producto['precioVenta'], 2); ?></span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="pill <?php echo $sinStock ? 'bg-pink-pastel/70' : ($stockBajo ? 'bg-peach-pastel/70' : 'bg-green-pastel/70'); ?> text-gray-800">
@@ -137,7 +141,7 @@ $pageTitle = "Productos";
 
     const emptyRow = `
         <tr>
-            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                 <i data-lucide="inbox" class="h-10 w-10 mx-auto mb-2 text-gray-400"></i>
                 <p>No hay productos registrados</p>
             </td>
@@ -145,7 +149,7 @@ $pageTitle = "Productos";
 
     const loadingRow = `
         <tr>
-            <td colspan="8" class="px-6 py-6 text-center text-gray-500">
+            <td colspan="9" class="px-6 py-6 text-center text-gray-500">
                 <i data-lucide="loader-2" class="h-5 w-5 inline animate-spin mr-2"></i>
                 Buscando...
             </td>
@@ -153,7 +157,7 @@ $pageTitle = "Productos";
 
     const errorRow = `
         <tr>
-            <td colspan="8" class="px-6 py-6 text-center text-red-600">
+            <td colspan="9" class="px-6 py-6 text-center text-red-600">
                 <i data-lucide="alert-triangle" class="h-5 w-5 inline mr-2"></i>
                 No se pudo cargar la búsqueda
             </td>
@@ -179,9 +183,12 @@ $pageTitle = "Productos";
         const iconoStock = sinStock
             ? '<i data-lucide="alert-octagon" class="h-4 w-4 text-red-500" title="Sin stock"></i>'
             : (stockBajo ? '<i data-lucide="alert-triangle" class="h-4 w-4 text-amber-500" title="Stock bajo"></i>' : '');
-        const precio = (typeof formatearMoneda === 'function')
-            ? formatearMoneda(Number(p.precio ?? 0))
-            : `$${Number(p.precio ?? 0).toFixed(2)}`;
+        const precioCompra = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(Number(p.precioCompra ?? 0))
+            : `$${Number(p.precioCompra ?? 0).toFixed(2)}`;
+        const precioVenta = (typeof formatearMoneda === 'function')
+            ? formatearMoneda(Number(p.precioVenta ?? 0))
+            : `$${Number(p.precioVenta ?? 0).toFixed(2)}`;
         const productoJson = JSON.stringify(p).replace(/"/g, '&quot;');
         const estadoLabel = Number(p.estado) === 1 ? 'Activo' : 'Inactivo';
         const estadoClass = Number(p.estado) === 1 ? 'text-green-700' : 'text-gray-500';
@@ -202,7 +209,10 @@ $pageTitle = "Productos";
                     ${escapeHtml(p.categoria_nombre)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="text-sm font-bold text-blue-600">${precio}</span>
+                    <span class="text-sm font-bold text-gray-800">${precioCompra}</span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="text-sm font-bold text-blue-600">${precioVenta}</span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="pill ${badgeClass} text-gray-800">
@@ -353,10 +363,15 @@ $pageTitle = "Productos";
                     </div>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Precio *</label>
-                        <input type="number" name="precio" id="precio" step="0.01" min="0" required class="input-modern mt-1">
+                        <label class="block text-sm font-medium text-gray-700">Precio compra *</label>
+                        <input type="number" name="precioCompra" id="precioCompra" step="0.01" min="0" value="0" required class="input-modern mt-1">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Precio venta *</label>
+                        <input type="number" name="precioVenta" id="precioVenta" step="0.01" min="0" value="0" required class="input-modern mt-1">
                     </div>
                     
                     <div>
@@ -392,6 +407,8 @@ function abrirModal(accion, producto = null) {
         form.action = '<?php echo BASE_URL; ?>productos/create';
         form.reset();
         document.getElementById('codProducto').value = '';
+        document.getElementById('precioCompra').value = document.getElementById('precioCompra').defaultValue || 0;
+        document.getElementById('precioVenta').value = document.getElementById('precioVenta').defaultValue || 0;
     } else {
         title.textContent = 'Editar Producto';
         form.action = '<?php echo BASE_URL; ?>productos/update';
@@ -400,7 +417,8 @@ function abrirModal(accion, producto = null) {
         document.getElementById('descripcion').value = producto.descripcion || '';
         document.getElementById('idCategoria').value = producto.idCategoria;
         document.getElementById('idMedida').value = producto.idMedida;
-        document.getElementById('precio').value = producto.precio;
+        document.getElementById('precioCompra').value = producto.precioCompra ?? 0;
+        document.getElementById('precioVenta').value = producto.precioVenta ?? 0;
         document.getElementById('existencia').value = producto.existencia;
         document.getElementById('stockMinimo').value = producto.stockMinimo;
         document.getElementById('codigoBarras').value = producto.codigoBarras || '';
