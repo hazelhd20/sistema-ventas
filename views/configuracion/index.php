@@ -17,8 +17,8 @@ $configDisabled = $configDisabled ?? false;
         <div class="card">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Categorias</h3>
-                <button onclick="abrirModalCategoria('crear')" class="btn-primary px-3 py-2">
-                    <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Nueva
+                <button onclick="abrirModalCategoria('crear')" class="btn-primary px-3 py-2" aria-label="Nueva categoria" title="Nueva categoria">
+                    <i data-lucide="plus" class="h-4 w-4"></i>
                 </button>
             </div>
             <div class="space-y-2">
@@ -26,29 +26,30 @@ $configDisabled = $configDisabled ?? false;
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($cat['nombre']); ?></span>
-                            <span class="ml-2 text-xs <?php echo ((int)$cat['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
-                                <?php echo ((int)$cat['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            <?php $categoriaActiva = (int)$cat['estado'] === 1; ?>
+                            <span class="pill ml-2 <?php echo $categoriaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                                <?php echo $categoriaActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalCategoria('editar', <?php echo htmlspecialchars(json_encode($cat)); ?>)"
-                                    class="btn-ghost px-3 py-1">
-                                <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
+                                    class="btn-ghost px-3 py-1" aria-label="Editar categoria" title="Editar categoria">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$cat['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta categoria?')" class="btn-ghost px-3 py-1 text-red-700">
-                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta categoria?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar categoria" title="Desactivar categoria">
+                                        <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/categoria" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $cat['idCategoria']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
-                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar categoria" title="Activar categoria">
+                                        <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -62,8 +63,8 @@ $configDisabled = $configDisabled ?? false;
         <div class="card">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Medidas</h3>
-                <button onclick="abrirModalMedida('crear')" class="btn-primary px-3 py-2">
-                    <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Nueva
+                <button onclick="abrirModalMedida('crear')" class="btn-primary px-3 py-2" aria-label="Nueva medida" title="Nueva medida">
+                    <i data-lucide="plus" class="h-4 w-4"></i>
                 </button>
             </div>
             <div class="space-y-2">
@@ -71,29 +72,30 @@ $configDisabled = $configDisabled ?? false;
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($med['nombre'] . ' (' . $med['abreviatura'] . ')'); ?></span>
-                            <span class="ml-2 text-xs <?php echo ((int)$med['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
-                                <?php echo ((int)$med['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            <?php $medidaActiva = (int)$med['estado'] === 1; ?>
+                            <span class="pill ml-2 <?php echo $medidaActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                                <?php echo $medidaActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalMedida('editar', <?php echo htmlspecialchars(json_encode($med)); ?>)"
-                                    class="btn-ghost px-3 py-1">
-                                <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
+                                    class="btn-ghost px-3 py-1" aria-label="Editar medida" title="Editar medida">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$med['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta medida?')" class="btn-ghost px-3 py-1 text-red-700">
-                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta medida?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar medida" title="Desactivar medida">
+                                        <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/medida" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $med['idMedida']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
-                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar medida" title="Activar medida">
+                                        <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -107,8 +109,8 @@ $configDisabled = $configDisabled ?? false;
         <div class="card">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-800">Formas de pago</h3>
-                <button onclick="abrirModalFormaPago('crear')" class="btn-primary px-3 py-2">
-                    <i data-lucide="plus" class="h-4 w-4 mr-1"></i> Nueva
+                <button onclick="abrirModalFormaPago('crear')" class="btn-primary px-3 py-2" aria-label="Nueva forma de pago" title="Nueva forma de pago">
+                    <i data-lucide="plus" class="h-4 w-4"></i>
                 </button>
             </div>
             <div class="space-y-2">
@@ -116,29 +118,30 @@ $configDisabled = $configDisabled ?? false;
                     <div class="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
                         <div>
                             <span class="text-sm font-medium text-gray-800"><?php echo htmlspecialchars($fp['nombre']); ?></span>
-                            <span class="ml-2 text-xs <?php echo ((int)$fp['estado'] === 1) ? 'text-green-700' : 'text-gray-500'; ?>">
-                                <?php echo ((int)$fp['estado'] === 1) ? 'Activo' : 'Inactivo'; ?>
+                            <?php $formaPagoActiva = (int)$fp['estado'] === 1; ?>
+                            <span class="pill ml-2 <?php echo $formaPagoActiva ? 'bg-green-pastel/70 text-gray-800' : 'bg-gray-200 text-gray-700'; ?>">
+                                <?php echo $formaPagoActiva ? 'Activo' : 'Inactivo'; ?>
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
                             <button onclick="abrirModalFormaPago('editar', <?php echo htmlspecialchars(json_encode($fp)); ?>)"
-                                    class="btn-ghost px-3 py-1">
-                                <i data-lucide="edit" class="h-4 w-4 mr-1"></i> Editar
+                                    class="btn-ghost px-3 py-1" aria-label="Editar forma de pago" title="Editar forma de pago">
+                                <i data-lucide="edit" class="h-4 w-4"></i>
                             </button>
                             <?php if ((int)$fp['estado'] === 1): ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="desactivar">
                                     <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
-                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta forma de pago?')" class="btn-ghost px-3 py-1 text-red-700">
-                                        <i data-lucide="ban" class="h-4 w-4 mr-1"></i> Desactivar
+                                    <button type="submit" onclick="return confirmarEliminacion('Desea desactivar esta forma de pago?')" class="btn-ghost px-3 py-1 text-red-700" aria-label="Desactivar forma de pago" title="Desactivar forma de pago">
+                                        <i data-lucide="ban" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline">
+                                <form method="POST" action="<?php echo BASE_URL; ?>configuracion/formaPago" class="inline" data-keep-scroll="true">
                                     <input type="hidden" name="accion" value="activar">
                                     <input type="hidden" name="id" value="<?php echo $fp['idFormaPago']; ?>">
-                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700">
-                                        <i data-lucide="check-circle" class="h-4 w-4 mr-1"></i> Activar
+                                    <button type="submit" class="btn-ghost px-3 py-1 text-green-700" aria-label="Activar forma de pago" title="Activar forma de pago">
+                                        <i data-lucide="check-circle" class="h-4 w-4"></i>
                                     </button>
                                 </form>
                             <?php endif; ?>
@@ -214,6 +217,21 @@ function abrirModalFormaPago(accion, forma = null) {
 function cerrarModalFormaPago() {
     document.getElementById('modalFormaPago').classList.add('hidden');
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const SCROLL_KEY = 'configuracion-scroll';
+    const savedScroll = sessionStorage.getItem(SCROLL_KEY);
+    if (savedScroll !== null) {
+        window.scrollTo(0, Number(savedScroll));
+        sessionStorage.removeItem(SCROLL_KEY);
+    }
+
+    document.querySelectorAll('form[data-keep-scroll]').forEach(form => {
+        form.addEventListener('submit', () => {
+            sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
+        });
+    });
+});
 </script>
 
 <!-- Modal Categoria -->
@@ -237,9 +255,11 @@ function cerrarModalFormaPago() {
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="cerrarModalCategoria()" class="btn-ghost">Cancelar</button>
-                    <button type="submit" class="btn-primary">
-                        <i data-lucide="save" class="h-4 w-4 mr-1"></i> Guardar
+                    <button type="button" onclick="cerrarModalCategoria()" class="btn-ghost" aria-label="Cancelar" title="Cancelar">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                    <button type="submit" class="btn-primary" aria-label="Guardar categoria" title="Guardar categoria">
+                        <i data-lucide="save" class="h-4 w-4"></i>
                     </button>
                 </div>
             </form>
@@ -271,9 +291,11 @@ function cerrarModalFormaPago() {
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="cerrarModalMedida()" class="btn-ghost">Cancelar</button>
-                    <button type="submit" class="btn-primary">
-                        <i data-lucide="save" class="h-4 w-4 mr-1"></i> Guardar
+                    <button type="button" onclick="cerrarModalMedida()" class="btn-ghost" aria-label="Cancelar" title="Cancelar">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                    <button type="submit" class="btn-primary" aria-label="Guardar medida" title="Guardar medida">
+                        <i data-lucide="save" class="h-4 w-4"></i>
                     </button>
                 </div>
             </form>
@@ -305,9 +327,11 @@ function cerrarModalFormaPago() {
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="cerrarModalFormaPago()" class="btn-ghost">Cancelar</button>
-                    <button type="submit" class="btn-primary">
-                        <i data-lucide="save" class="h-4 w-4 mr-1"></i> Guardar
+                    <button type="button" onclick="cerrarModalFormaPago()" class="btn-ghost" aria-label="Cancelar" title="Cancelar">
+                        <i data-lucide="x" class="h-4 w-4"></i>
+                    </button>
+                    <button type="submit" class="btn-primary" aria-label="Guardar forma de pago" title="Guardar forma de pago">
+                        <i data-lucide="save" class="h-4 w-4"></i>
                     </button>
                 </div>
             </form>
