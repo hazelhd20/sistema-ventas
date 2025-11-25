@@ -175,6 +175,8 @@ $oldObservaciones = old('observaciones', '');
     const oldTotal = <?php echo json_encode($oldTotalVenta); ?>;
     const oldIdCliente = <?php echo json_encode($oldIdCliente); ?>;
     const oldClienteNombre = <?php echo json_encode($oldClienteNombre); ?>;
+    const oldIdFormaPago = <?php echo json_encode($oldIdFormaPago); ?>;
+    const oldObservaciones = <?php echo json_encode($oldObservaciones); ?>;
 
     const emptyState = `
         <div class="text-center text-gray-500 py-4">
@@ -333,8 +335,8 @@ $oldObservaciones = old('observaciones', '');
                             <input type="number" min="1" class="input-modern w-20 text-right" value="${cantidad}"
                                    onchange="actualizarCantidadVenta(${idx}, this.value)">
                         </div>
-                        <div class="text-sm font-bold text-blue-600">${formatearMoneda ? formatearMoneda(precio) : '$' + precio.toFixed(2)}</div>
-                        <div class="text-xs text-gray-500">Linea: ${formatearMoneda ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
+                        <div class="text-sm font-bold text-blue-600">${typeof formatearMoneda === 'function' ? formatearMoneda(precio) : '$' + precio.toFixed(2)}</div>
+                        <div class="text-xs text-gray-500">Linea: ${typeof formatearMoneda === 'function' ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
                         <button type="button" class="btn-ghost px-2 py-1 text-red-700 text-xs"
                                 onclick="eliminarProductoVenta(${idx})">
                             <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Quitar
@@ -350,8 +352,8 @@ $oldObservaciones = old('observaciones', '');
 
     function actualizarTotales() {
         const subtotal = carrito.reduce((acc, item) => acc + Number(item.precio ?? item.precioVenta ?? item.precioCompra ?? 0) * Number(item.cantidad ?? 1), 0);
-        if (subtotalEl) subtotalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
-        if (totalEl) totalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (subtotalEl) subtotalEl.textContent = typeof formatearMoneda === 'function' ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = typeof formatearMoneda === 'function' ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
         if (detallesInput) detallesInput.value = JSON.stringify(carrito.map(item => ({
             codProducto: item.codProducto,
             cantidad: Number(item.cantidad ?? 1),

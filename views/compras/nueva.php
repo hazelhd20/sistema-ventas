@@ -308,7 +308,7 @@ $oldObservaciones = old('observaciones', '');
                             <input type="number" min="0" step="0.01" class="input-modern w-24 text-right" value="${precio.toFixed(2)}"
                                    onchange="actualizarPrecioCompra(${idx}, this.value)">
                         </div>
-                        <div class="text-xs text-gray-500">Linea: ${formatearMoneda ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
+                        <div class="text-xs text-gray-500">Linea: ${typeof formatearMoneda === 'function' ? formatearMoneda(totalLinea) : '$' + totalLinea.toFixed(2)}</div>
                         <button type="button" class="btn-ghost px-2 py-1 text-red-700 text-xs"
                                 onclick="eliminarProductoCompra(${idx})">
                             <i data-lucide="trash" class="h-4 w-4 mr-1"></i> Quitar
@@ -324,8 +324,8 @@ $oldObservaciones = old('observaciones', '');
 
     function actualizarTotales() {
         const subtotal = carrito.reduce((acc, item) => acc + Number(item.precioCompra ?? item.precio ?? 0) * Number(item.cantidad ?? 1), 0);
-        if (subtotalEl) subtotalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
-        if (totalEl) totalEl.textContent = formatearMoneda ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (subtotalEl) subtotalEl.textContent = typeof formatearMoneda === 'function' ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
+        if (totalEl) totalEl.textContent = typeof formatearMoneda === 'function' ? formatearMoneda(subtotal) : `$${subtotal.toFixed(2)}`;
         if (detallesInput) detallesInput.value = JSON.stringify(carrito.map(item => ({
             codProducto: item.codProducto,
             cantidad: Number(item.cantidad ?? 1),
