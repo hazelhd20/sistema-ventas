@@ -4,8 +4,8 @@ $pageTitle = "Detalle de Compra";
 
 <div class="max-w-7xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
-        <a href="<?php echo BASE_URL; ?>compras" class="btn-ghost px-3 py-2">
-            <i data-lucide="arrow-left" class="h-4 w-4 mr-1"></i> Volver al historial
+        <a href="<?php echo BASE_URL; ?>compras/nueva" class="btn-ghost px-3 py-2">
+            <i data-lucide="arrow-left" class="h-4 w-4 mr-1"></i> Realizar otra compra
         </a>
         <h2 class="text-2xl font-semibold text-gray-800">Compra #<?php echo $compra['idCompra']; ?></h2>
     </div>
