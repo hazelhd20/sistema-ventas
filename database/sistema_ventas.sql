@@ -231,9 +231,11 @@ INSERT INTO roles (idRol, nombre, descripcion) VALUES
 (2, 'Encargado', 'Gestión de compras y reportes'),
 (3, 'Vendedor', 'Registro de ventas y consultas básicas');
 
--- Usuario administrador por defecto (password: admin123)
+-- Usuarios por defecto para cada rol
 INSERT INTO usuarios (idUsuario, idRol, nombre, apellidos, usuario, password, email) VALUES
-(1, 1, 'Administrador', 'Sistema', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@elmercadito.com');
+(1, 1, 'Administrador', 'Sistema', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin@elmercadito.com'),
+(2, 2, 'Encargado', 'Sistema', 'encargado', '$2y$10$f9M1iWFqcmf5JXz/C..nue1fQjN4X7D7wlnMWyvi0uSmiLkkZufbW', 'encargado@elmercadito.com'),
+(3, 3, 'Vendedor', 'Sistema', 'vendedor', '$2y$10$v6JnW.uQFM5j1a2WJt.KY.zehX1siMl1nta9dZJelksjcRYjnSSQW', 'vendedor@elmercadito.com');
 
 -- Categorías
 INSERT INTO categorias (nombre, descripcion) VALUES

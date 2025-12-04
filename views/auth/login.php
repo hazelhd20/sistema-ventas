@@ -52,22 +52,35 @@ $usuario = e(old('usuario', ''));
                     <h1 class="text-2xl font-semibold text-gray-800"><?= $appName ?></h1>
                 </div>
             </div>
-            <div class="space-y-4 text-gray-700 text-sm leading-relaxed">
-                <p>Controla ventas e inventario con una interfaz ligera.</p>
-                <ul class="space-y-2">
-                    <li class="flex items-start space-x-2">
-                        <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5"></i>
-                        <span>Alertas de stock y panel moderno.</span>
-                    </li>
-                    <li class="flex items-start space-x-2">
-                        <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5"></i>
-                        <span>Reportes claros y exportables.</span>
-                    </li>
-                    <li class="flex items-start space-x-2">
-                        <i data-lucide="check-circle" class="h-5 w-5 text-green-600 mt-0.5"></i>
-                        <span>Roles de usuario para mayor seguridad.</span>
-                    </li>
-                </ul>
+            
+            <div class="mt-6 pt-6 border-t border-gray-300/50">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3 flex items-center space-x-2">
+                    <i data-lucide="users" class="h-4 w-4"></i>
+                    <span>Usuarios por defecto</span>
+                </h3>
+                <div class="space-y-2 text-xs">
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Administrador</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> admin</div>
+                            <div><span class="font-medium">Contraseña:</span> admin123</div>
+                        </div>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Encargado</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> encargado</div>
+                            <div><span class="font-medium">Contraseña:</span> encargado123</div>
+                        </div>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Vendedor</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> vendedor</div>
+                            <div><span class="font-medium">Contraseña:</span> vendedor123</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -130,6 +143,37 @@ $usuario = e(old('usuario', ''));
                     <span>Entrar al sistema</span>
                 </button>
             </form>
+            
+            <!-- Información de usuarios por defecto (visible en móvil) -->
+            <div class="lg:hidden mt-6 pt-6 border-t border-gray-300/50">
+                <h3 class="text-sm font-semibold text-gray-800 mb-3 flex items-center space-x-2">
+                    <i data-lucide="users" class="h-4 w-4"></i>
+                    <span>Usuarios por defecto</span>
+                </h3>
+                <div class="space-y-2 text-xs">
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Administrador</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> admin</div>
+                            <div><span class="font-medium">Contraseña:</span> admin123</div>
+                        </div>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Encargado</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> encargado</div>
+                            <div><span class="font-medium">Contraseña:</span> encargado123</div>
+                        </div>
+                    </div>
+                    <div class="bg-white/60 rounded-lg p-3 border border-gray-200/50">
+                        <div class="font-medium text-gray-800 mb-1">Vendedor</div>
+                        <div class="text-gray-600 space-y-1">
+                            <div><span class="font-medium">Usuario:</span> vendedor</div>
+                            <div><span class="font-medium">Contraseña:</span> vendedor123</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
